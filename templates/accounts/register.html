@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container-xxl">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner">
+            <!-- Register Card -->
+            <div class="card">
+                <div class="card-body">
+                    <!-- Logo -->
+                    <div class="app-brand justify-content-center">
+                        <a href="{% url 'home' %}" class="app-brand-link gap-2">
+                            <span class="app-brand-logo demo">
+                                <!-- SVG logo code here -->
+                            </span>
+                            <span class="app-brand-text demo text-body fw-bolder">Apotheekhulp</span>
+                        </a>
+                    </div>
+                    <!-- /Logo -->
+                    <h4 class="mb-2">Het avontuur begint hier 🚀</h4>
+
+                    <!-- Registration Form -->
+                    <form id="formAuthentication" class="mb-3" action="{% url 'register' %}" method="POST">
+                        {% csrf_token %}
+
+                        <!-- Display form errors -->
+                        {% if user_form.errors %}
+                            <div class="alert alert-danger">
+                                {% for field in user_form %}
+                                    {% if field.errors %}
+                                        <p>{{ field.label }}: {% for error in field.errors %}{{ error }} {% endfor %}</p>
+                                    {% endif %}
+                                {% endfor %}
+                                {% for error in user_form.non_field_errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- First Name Field -->
+                        <div class="mb-3">
+                            {{ user_form.first_name|as_crispy_field }}
+                        </div>
+
+                        <!-- Last Name Field -->
+                        <div class="mb-3">
+                            {{ user_form.last_name|as_crispy_field }}
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="mb-3">
+                            {{ user_form.email|as_crispy_field }}
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-3">
+                            {{ user_form.password|as_crispy_field }}
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="mb-3">
+                            {{ user_form.confirm_password|as_crispy_field }}
+                        </div>
+
+                        <!-- Role Field -->
+                        <div class="mb-3">
+                            {{ user_form.role|as_crispy_field }}
+                        </div>
+
+                        <!-- Assistent Form -->
+                        <div id="assistent-form" style="display:none;">
+                            <h5>Assistent Details</h5>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_btwNummer|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_btwPlichtig|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_naamBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_straatBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_huisnummerBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_postcodeBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_stadBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_krijgtKilometervergoeding|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ assistent_form.assistent_uurtarief|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <!-- Apotheek Form -->
+                        <div id="apotheek-form" style="display:block;">
+                            <h5>Apotheek Details</h5>
+                            <div class="mb-3">
+                                {{ apotheek_form.apotheek_btwNummer|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ apotheek_form.apotheek_btwPlichtig|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ apotheek_form.apotheek_naamBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ apotheek_form.apotheek_straatBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ apotheek_form.apotheek_huisnummerBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ apotheek_form.apotheek_postcodeBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ apotheek_form.apotheek_stadBedrijf|as_crispy_field }}
+                            </div>
+                            <div class="mb-3">
+                                {{ apotheek_form.apotheek_uurtarief|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary d-grid w-100">Registreer Gebruiker</button>
+                    </form>
+                    <!-- /Registration Form -->
+                </div>
+            </div>
+            <!-- Register Card -->
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-lg-12 col-sm-12 col-xs-12">
+        {% include 'includes/alerts.html' %}
+    </div>
+</div>
+{% endblock %}

@@ -116,3 +116,23 @@ let menu, animate;
   // Auto update menu collapsed/expanded based on the themeConfig
   window.Helpers.setCollapsed(true, false);
 })();
+
+const roleField = document.getElementById('id_role');
+
+const assistentForm = document.getElementById('assistent-form');
+const apotheekForm = document.getElementById('apotheek-form');
+
+roleField.addEventListener('change', function() {
+    console.log('Role field changed to:', this.value);
+    const selectedRole = this.value;
+    if (selectedRole === '1') {
+        assistentForm.style.display = 'block';
+        apotheekForm.style.display = 'none';
+    } else if (selectedRole === '2') {
+        assistentForm.style.display = 'none';
+        apotheekForm.style.display = 'block';
+    } else {
+        assistentForm.style.display = 'none';
+        apotheekForm.style.display = 'none';
+    }
+});

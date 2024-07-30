@@ -77,15 +77,15 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Assistent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    btwNummer = models.CharField(max_length=50)
-    btwPlichtig = models.BooleanField(default=True)
-    naamBedrijf = models.CharField(max_length=200)
-    straatBedrijf = models.CharField(max_length=200)
-    huisnummerBedrijf = models.CharField(max_length=10)
-    postcodeBedrijf = models.CharField(max_length=10)
-    stadBedrijf = models.CharField(max_length=200)
-    krijgtKilometervergoeding = models.BooleanField(default=True)
-    uurtarief = models.DecimalField(max_digits=10, decimal_places=2)
+    assistent_btwNummer = models.CharField(max_length=50, null=True, blank=True)
+    assistent_btwPlichtig = models.BooleanField(default=True)
+    assistent_naamBedrijf = models.CharField(max_length=200, null=True, blank=True)
+    assistent_straatBedrijf = models.CharField(max_length=200, null=True, blank=True)
+    assistent_huisnummerBedrijf = models.CharField(max_length=10, null=True, blank=True)
+    assistent_postcodeBedrijf = models.CharField(max_length=10, null=True, blank=True)
+    assistent_stadBedrijf = models.CharField(max_length=200, null=True, blank=True)
+    assistent_krijgtKilometervergoeding = models.BooleanField(default=True)
+    assistent_uurtarief = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.user.email
@@ -94,14 +94,14 @@ class Assistent(models.Model):
 class Apotheek(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     # Add other fields as required
-    btwNummer = models.CharField(max_length=50, null=True, blank=True)
-    btwPlichtig = models.BooleanField(default=True)
-    naamBedrijf = models.CharField(max_length=200, null=True, blank=True)
-    straatBedrijf = models.CharField(max_length=200, null=True, blank=True)
-    huisnummerBedrijf = models.CharField(max_length=10, null=True, blank=True)
-    postcodeBedrijf = models.CharField(max_length=10, null=True, blank=True)
-    stadBedrijf = models.CharField(max_length=200, null=True, blank=True)
-    uurtarief = models.DecimalField(max_digits=10, decimal_places=2)
+    apotheek_btwNummer = models.CharField(max_length=50, null=True, blank=True)
+    apotheek_btwPlichtig = models.BooleanField(default=True)
+    apotheek_naamBedrijf = models.CharField(max_length=200, null=True, blank=True)
+    apotheek_straatBedrijf = models.CharField(max_length=200, null=True, blank=True)
+    apotheek_huisnummerBedrijf = models.CharField(max_length=10, null=True, blank=True)
+    apotheek_postcodeBedrijf = models.CharField(max_length=10, null=True, blank=True)
+    apotheek_stadBedrijf = models.CharField(max_length=200, null=True, blank=True)
+    apotheek_uurtarief = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.user.email
