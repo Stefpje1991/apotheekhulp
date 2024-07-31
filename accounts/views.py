@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from .decorators import admin_required
 
 from .forms import UserCreationForm, AssistentForm, ApotheekForm, UserEditForm
-from .models import User
+from .models import User, Assistent, Apotheek
 
 
 def login_view(request):
@@ -92,4 +92,31 @@ def edit_userprofile(request):
 
 @login_required(login_url='login')
 def edit_companyprofile(request):
-    return render(request, 'accounts/companyprofile.html')
+    user = request.user
+
+    if user.role == 1:
+        form_class = AssistentForm
+        company_instance = Assistent.objects.get(user=user)  # Replace with correct query
+    else:
+        form_class = ApotheekForm
+        company_instance = Apotheek.objects.get(user=user)  # Replace with correct query
+
+    if request.method == 'POST':
+        form = form_class(request.POST, request.FILES, instance=company_instance)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Bedrijfsprofiel werd aangepast")
+            return redirect('edit_companyprofile')
+        else:
+            print(form.errors)
+    else:
+        form = form_class(instance=company_instance)
+
+        # Print field names and their values
+    print("Form fields and values:")
+    for field in form:
+        field_name = field.name
+        field_value = form.initial.get(field_name, None)  # Use cleaned_data to get the value
+        print(f"Field Name: {field_name}, Value: {field_value}")
+
+    return render(request, 'accounts/companyprofile.html', {'form': form})
