@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+              <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Profiel Instellingen /</span> Profiel</h4>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <ul class="nav nav-pills flex-column flex-md-row mb-3">
+                    <li class="nav-item">
+                      <a class="nav-link active" href="{% url 'edit_userprofile' %}">
+                        <i class="fas fa-user"></i>&nbsp;&nbsp; Persoonsgegevens
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="{% url 'edit_companyprofile' %}">
+                        <i class="fas fa-building"></i>&nbsp;&nbsp; Bedrijfsgegevens
+                      </a>
+                    </li>
+                  </ul>
+                  <div class="card mb-4">
+  <h5 class="card-header">Profielgegevens</h5>
+  <!-- Account -->
+  <div class="card-body">
+    <form id="formAccountSettings" method="POST" action="{% url 'edit_userprofile' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Display form errors -->
+      {% if form.errors %}
+          <div class="alert alert-danger">
+              {% for field in form %}
+                  {% if field.errors %}
+                      <p>{{ field.label }}: {% for error in field.errors %}{{ error }} {% endfor %}</p>
+                  {% endif %}
+              {% endfor %}
+              {% for error in form.non_field_errors %}
+                  <p>{{ error }}</p>
+              {% endfor %}
+          </div>
+      {% endif %}
+      <div class="d-flex align-items-start align-items-sm-center gap-4 mb-4">
+        <img
+          src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/img/avatars/default.jpg' %}{% endif %}"
+          alt="user-avatar"
+          class="d-block rounded"
+          height="100"
+          width="100"
+          id="uploadedAvatar"
+        />
+        <div class="button-wrapper">
+          <label for="upload" class="btn btn-primary me-2 mb-4" tabindex="0">
+            <span class="d-none d-sm-block">Voeg nieuwe foto toe</span>
+            <i class="bx bx-upload d-block d-sm-none"></i>
+            <input
+              type="file"
+              id="upload"
+              name="profile_picture"
+              class="account-file-input"
+              hidden
+              accept="image/png, image/jpeg, image/jpg"
+              onchange="previewImage(event)"
+            />
+          </label>
+          <button type="button" class="btn btn-outline-secondary account-image-reset mb-4" onclick="deleteProfilePicture()">
+            <i class="bx bx-reset d-block d-sm-none"></i>
+            <span class="d-none d-sm-block">Verwijder Profielfoto</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="mb-3 col-md-6">
+          <label for="firstName" class="form-label">Voornaam</label>
+          <input
+            class="form-control"
+            type="text"
+            id="firstName"
+            name="first_name"
+            value="{{ user.first_name }}"
+            readonly
+          />
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="lastName" class="form-label">Achternaam</label>
+          <input
+            class="form-control"
+            type="text"
+            id="lastName"
+            name="last_name"
+            value="{{ user.last_name }}"
+            readonly
+          />
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="email" class="form-label">E-mail</label>
+          <input
+            class="form-control"
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Gelieve je mailadres in te geven"
+            value="{{ user.email }}"
+            autofocus
+          />
+        </div>
+        <div class="mb-3 col-md-6">
+          <label for="phoneNumber" class="form-label">Telefoonnummer</label>
+          <div class="input-group input-group-merge">
+            <input
+              type="text"
+              id="phoneNumber"
+              name="phone_number"
+              class="form-control"
+              placeholder="Gelieve je telefoonnummer in te geven"
+              value="{{ user.phone_number }}"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <button type="submit" class="btn btn-primary me-2">Sla wijzigingen op</button>
+        <button type="reset" class="btn btn-outline-secondary" onclick="window.location.href='{% url 'home' %}'">Annuleer wijzigingen</button>
+      </div>
+    </form>
+      <form id="deleteProfilePictureForm" method="POST" action="{% url 'edit_userprofile' %}" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="delete_profile_picture" value="true">
+          </form>
+
+  </div>
+  <!-- /Account -->
+</div>
+
+                </div>
+              </div>
+            </div>
+            <!-- / Content -->
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-lg-12 col-sm-12 col-xs-12">
+        {% include 'includes/alerts.html' %}
+    </div>
+</div>
+{% endblock %}

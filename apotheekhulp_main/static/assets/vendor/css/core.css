@@ -15743,8 +15743,10 @@ html:not(.layout-footer-fixed) .content-wrapper {
   cursor: pointer;
 }
 .avatar img {
-  width: 100%;
-  height: 100%;
+    max-width: 40px; /* Set a maximum width */
+    max-height: 40px; /* Set a maximum height */
+    object-fit: cover; /* Ensure the image covers the designated space without distorting */
+    border-radius: 50%; /* Make sure the image is always circular */
 }
 .avatar .avatar-initial {
   position: absolute;

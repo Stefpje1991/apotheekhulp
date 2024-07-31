@@ -136,3 +136,17 @@ roleField.addEventListener('change', function() {
         apotheekForm.style.display = 'none';
     }
 });
+
+function deleteProfilePicture() {
+    document.getElementById('deleteProfilePictureForm').submit();
+  }
+
+function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+      const output = document.getElementById('uploadedAvatar');
+      output.src = reader.result;
+      alert("Profielfoto is geladen maar nog niet opgeslaan");
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }

@@ -14,7 +14,8 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['password', 'confirm_password', 'email', 'first_name', 'last_name', 'phone_number', 'role']
+        fields = ['password', 'confirm_password', 'email', 'first_name', 'last_name', 'phone_number', 'role',
+                  'profile_picture']
         labels = {
             'phone_number': 'Telefoonnummer',
             'password': 'Wachtwoord',
@@ -22,7 +23,8 @@ class UserCreationForm(forms.ModelForm):
             'email': 'E-mail',
             'first_name': 'Voornaam',
             'last_name': 'Achternaam',
-            'role': 'Rol'
+            'role': 'Rol',
+            'profile_picture': 'Profielfoto',
         }
 
     def clean(self):
@@ -38,6 +40,22 @@ class UserCreationForm(forms.ModelForm):
         self.fields['password'].label = 'Wachtwoord'
         self.fields['confirm_password'].label = 'Bevestig Wachtwoord'
         self.fields['role'].choices = self.ROLE_CHOICES  # Set the limited choices for role
+
+
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'phone_number', 'profile_picture']
+        labels = {
+            'phone_number': 'Telefoonnummer',
+            'email': 'E-mail',
+            'first_name': 'Voornaam',
+            'last_name': 'Achternaam',
+            'profile_picture': 'Profielfoto',
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
 
 
 class AssistentForm(forms.ModelForm):
@@ -63,7 +81,8 @@ class ApotheekForm(forms.ModelForm):
     class Meta:
         model = Apotheek
         fields = ['apotheek_btwNummer', 'apotheek_btwPlichtig', 'apotheek_naamBedrijf', 'apotheek_straatBedrijf',
-                  'apotheek_huisnummerBedrijf', 'apotheek_postcodeBedrijf', 'apotheek_stadBedrijf', 'apotheek_uurtarief']
+                  'apotheek_huisnummerBedrijf', 'apotheek_postcodeBedrijf', 'apotheek_stadBedrijf',
+                  'apotheek_uurtarief']
         labels = {
             'apotheek_btwNummer': 'BTW Nummer',
             'apotheek_btwPlichtig': 'BTW Plichtig',

@@ -50,8 +50,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=50)
     username = models.EmailField(max_length=100)
     email = models.EmailField(max_length=100, unique=True)
-    phone_number = models.CharField(max_length=15, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
     role = models.PositiveSmallIntegerField(choices=ROLE, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
     created_date = models.DateTimeField(auto_now_add=True)
@@ -61,7 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'username', 'role']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
 
     objects = UserManager()
 
@@ -73,6 +74,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def has_module_perms(self, app_label):
         return True
+
+    def get_role_display(self):
+        return dict(self.ROLE).get(self.role, 'Unknown')
 
 
 class Assistent(models.Model):

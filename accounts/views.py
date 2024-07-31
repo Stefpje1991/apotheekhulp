@@ -3,8 +3,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from .decorators import admin_required
 
-from .forms import UserCreationForm, AssistentForm, ApotheekForm
+from .forms import UserCreationForm, AssistentForm, ApotheekForm, UserEditForm
 from .models import User
 
 
@@ -14,12 +15,10 @@ def login_view(request):
         password = request.POST['password']
         user = authenticate(request, username=email, password=password)
         if user is not None:
-            print("OK")
             login(request, user)
             messages.success(request, 'Succesvol aangemeld')
             return redirect('home')  # Redirect to a success page.
         else:
-            print("NIET OK")
             # Return an 'invalid login' error message.
             messages.error(request, 'Ongeldige gebruikersnaam of wachtwoord')
     return render(request, 'accounts/login.html')
@@ -32,9 +31,12 @@ def logout(request):
     return redirect('home')
 
 
+@admin_required
 def register(request):
     if request.method == 'POST':
         user_form = UserCreationForm(request.POST)
+        assistent_form = ""
+        apotheek_form = ""
         if user_form.is_valid():
             user = user_form.save(commit=False)
             user.set_password(user_form.cleaned_data['password'])
@@ -64,3 +66,30 @@ def register(request):
         'assistent_form': assistent_form,
         'apotheek_form': apotheek_form,
     })
+
+
+@login_required(login_url='login')
+def edit_userprofile(request):
+    if request.method == 'POST':
+        user = request.user
+        if 'delete_profile_picture' in request.POST:
+            user.profile_picture.delete(save=False)  # Delete the profile picture file
+            user.profile_picture = None  # Set the profile picture field to None
+            user.save()
+            messages.success(request, "Profielfoto is verwijderd")
+            return redirect('edit_userprofile')
+        else:
+            form = UserEditForm(request.POST, request.FILES, instance=request.user)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Gebruikersprofiel werd aangepast")
+                return redirect('edit_userprofile')
+    else:
+        form = UserEditForm(instance=request.user)
+
+    return render(request, 'accounts/userprofile.html', {'form': form})
+
+
+@login_required(login_url='login')
+def edit_companyprofile(request):
+    return render(request, 'accounts/companyprofile.html')
