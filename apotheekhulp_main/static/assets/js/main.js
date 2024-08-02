@@ -150,3 +150,15 @@ function previewImage(event) {
     };
     reader.readAsDataURL(event.target.files[0]);
   }
+
+$(document).ready(function() {
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                defaultDate: '2024-08-01',
+                editable: true,
+            });
+        });

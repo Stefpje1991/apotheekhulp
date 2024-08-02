@@ -112,11 +112,4 @@ def edit_companyprofile(request):
     else:
         form = form_class(instance=company_instance)
 
-        # Print field names and their values
-    print("Form fields and values:")
-    for field in form:
-        field_name = field.name
-        field_value = form.initial.get(field_name, None)  # Use cleaned_data to get the value
-        print(f"Field Name: {field_name}, Value: {field_value}")
-
     return render(request, 'accounts/companyprofile.html', {'form': form})

@@ -14,6 +14,15 @@
             </li>
 
             {% if user.is_authenticated %}
+            <li class="menu-item">
+              <a href="{% url 'calendar' %}" class="menu-link">
+                <i class="fa-solid fa-user-plus me-2"></i>
+                <div data-i18n="Analytics">Kalender</div>
+              </a>
+            </li>
+            {% if user.role == 1 %}
+
+            {% endif %}
             {% if user.role == 3 %}
             <li class="menu-item">
               <a href="{% url 'register' %}" class="menu-link">

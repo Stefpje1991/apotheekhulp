@@ -1,0 +1,33 @@
+from django.db import models
+from accounts.models import User, Assistent, Apotheek
+
+
+class Event(models.Model):
+    CATEGORY_CHOICES = [
+        ('werk', 'Werk'),
+        ('opleiding', 'Opleiding'),
+        ('teambuilding', 'Teambuilding'),
+        ('overleg', 'Overleg'),
+        # Add more categories as needed
+    ]
+
+    STATUS_CHOICES = [
+        ('accepted', 'Goedgekeurd'),
+        ('noaction', 'Geen actie'),
+        ('declined', 'Afgekeurd')
+    ]
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='werk')
+    assistent = models.ForeignKey(Assistent, on_delete=models.CASCADE, related_name='assistentevents', null=True,
+                                  blank=True)
+    apotheek = models.ForeignKey(Apotheek, on_delete=models.CASCADE, related_name='apotheekevents', null=True,
+                                 blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='userevents', null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    modified_date = models.DateTimeField(auto_now=True, blank=True, null=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='noaction')
+    status_last_changed_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.assistent) + "_" + str(self.apotheek) + "_" + str(self.start_time) + "_" + str(self.end_time)

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apotheekhulp_main',
     "crispy_forms",
     "crispy_bootstrap5",
+    'calendar_app'
 ]
 
 MIDDLEWARE = [

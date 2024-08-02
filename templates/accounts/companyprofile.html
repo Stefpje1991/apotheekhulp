@@ -23,7 +23,7 @@
   <h5 class="card-header">Bedrijfsgegevens</h5>
   <!-- Account -->
   <div class="card-body">
-    <form id="formCompanySettings" method="POST" action="{% url 'edit_userprofile' %}" enctype="multipart/form-data">
+    <form id="formCompanySettings" method="POST" action="{% url 'edit_companyprofile' %}" enctype="multipart/form-data">
       {% csrf_token %}
 
       <!-- Display form errors -->
