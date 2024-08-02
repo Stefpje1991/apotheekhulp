@@ -4,5 +4,26 @@
 {% block content %}
 <div class="container-xxl flex-grow-1 container-p-y">
     <div id="calendar"></div>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventDetailsModalLabel">Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Type:</strong> <span id="modal-event-category"></span></p>
+                    <p><strong>Startuur:</strong> <span id="modal-event-start"></span></p>
+                    <p><strong>Einduur:</strong> <span id="modal-event-end"></span></p>
+                    <p><strong>Apotheek:</strong> <span id="modal-event-apotheek"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="acceptBtn" style="display: none;">Aanvaarden</button>
+                    <button type="button" class="btn btn-danger" id="rejectBtn" style="display: none;">Weigeren</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

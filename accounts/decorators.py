@@ -11,3 +11,14 @@ def admin_required(view_func):
             return redirect('home')  # Redirect to a "not authorized" page or home
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+def role_required(*allowed_roles):
+    def decorator(view_func):
+        @login_required(login_url='login')
+        def wrapper(request, *args, **kwargs):
+            if request.user.role not in allowed_roles:
+                return redirect('home')  # Redirect to a "not authorized" page or home
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator

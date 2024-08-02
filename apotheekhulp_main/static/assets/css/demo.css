@@ -120,3 +120,39 @@
     animation-duration: 5s;
     z-index: 9999;
 }
+
+/* Custom CSS for ensuring modal is centered */
+.modal-dialog {
+    max-width: 500px; /* Adjust width if necessary */
+    margin: 1.75rem auto; /* Vertical and horizontal centering */
+}
+.modal-content {
+    padding: 1rem; /* Adjust padding if necessary */
+}
+
+.fc-event {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0.4em; /* Add padding around the event */
+}
+
+/* Ensure the badge is centered within the event */
+.fc-event .badge {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center; /* Center text inside badge */
+    font-size: 1rem; /* Increase font size */
+    padding: 0.4em 0.8em; /* Adjust padding */
+    border-radius: 0.3rem; /* Optional: round the corners of the badge */
+}
+
+/* Ensure event text is not stretched out */
+.fc-event-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

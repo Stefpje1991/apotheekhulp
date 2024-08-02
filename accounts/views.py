@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .decorators import admin_required
+from .decorators import admin_required, role_required
 
 from .forms import UserCreationForm, AssistentForm, ApotheekForm, UserEditForm
 from .models import User, Assistent, Apotheek
@@ -91,6 +91,7 @@ def edit_userprofile(request):
 
 
 @login_required(login_url='login')
+@role_required(1, 2)
 def edit_companyprofile(request):
     user = request.user
 

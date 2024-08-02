@@ -14,24 +14,21 @@
             </li>
 
             {% if user.is_authenticated %}
-            <li class="menu-item">
+            <li class="menu-item {% active request 'calendar' %}">
               <a href="{% url 'calendar' %}" class="menu-link">
-                <i class="fa-solid fa-user-plus me-2"></i>
+                <i class="fas fa-calendar me-2"></i>
                 <div data-i18n="Analytics">Kalender</div>
               </a>
             </li>
-            {% if user.role == 1 %}
-
-            {% endif %}
             {% if user.role == 3 %}
-            <li class="menu-item">
+            <li class="menu-item {% active request 'register' %}">
               <a href="{% url 'register' %}" class="menu-link">
                 <i class="fa-solid fa-user-plus me-2"></i>
                 <div data-i18n="Analytics">Nieuwe Gebruiker</div>
               </a>
             </li>
             {% endif %}
-
+            {% if user.role == 1 or user.role == 2 %}
             <li class="menu-item">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-dock-top"></i>
@@ -43,14 +40,16 @@
                     <div data-i18n="Account">Persoonsgegevens</div>
                   </a>
                 </li>
+
                 <li class="menu-item">
                   <a href="{% url 'edit_companyprofile' %}" class="menu-link">
                     <div data-i18n="Notifications">Bedrijfsgegevens</div>
                   </a>
                 </li>
+
               </ul>
             </li>
-
+            {% endif %}
             <li class="menu-item">
               <a href="{% url 'logout' %}" class="menu-link">
                 <i class="fa-solid fa-sign-out-alt me-2"></i>
