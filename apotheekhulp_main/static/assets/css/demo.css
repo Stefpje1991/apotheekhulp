@@ -121,7 +121,7 @@
     z-index: 9999;
 }
 
-/* Custom CSS for ensuring modal is centered */
+//* Custom CSS for ensuring modal is centered */
 .modal-dialog {
     max-width: 500px; /* Adjust width if necessary */
     margin: 1.75rem auto; /* Vertical and horizontal centering */
@@ -145,9 +145,13 @@
     justify-content: center;
     align-items: center;
     text-align: center; /* Center text inside badge */
-    font-size: 1rem; /* Increase font size */
+    font-size: 0.7rem; /* Increase font size */
     padding: 0.4em 0.8em; /* Adjust padding */
     border-radius: 0.3rem; /* Optional: round the corners of the badge */
+    max-width: 100%; /* Ensure badge does not exceed the event container */
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Display ellipsis for overflow text */
 }
 
 /* Ensure event text is not stretched out */

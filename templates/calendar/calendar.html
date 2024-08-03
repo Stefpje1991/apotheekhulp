@@ -3,25 +3,65 @@
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Calendar Container -->
     <div id="calendar"></div>
-    <!-- Bootstrap Modal -->
+
+    <!-- Event Details Modal -->
     <div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="eventDetailsModalLabel">Details</h5>
+                    <h5 class="modal-title" id="eventDetailsModalLabel">Event Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Type:</strong> <span id="modal-event-category"></span></p>
-                    <p><strong>Startuur:</strong> <span id="modal-event-start"></span></p>
-                    <p><strong>Einduur:</strong> <span id="modal-event-end"></span></p>
+                    <p><strong>Category:</strong> <span id="modal-event-category"></span></p>
+                    <p><strong>Start:</strong> <span id="modal-event-start"></span></p>
+                    <p><strong>End:</strong> <span id="modal-event-end"></span></p>
                     <p><strong>Apotheek:</strong> <span id="modal-event-apotheek"></span></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" id="acceptBtn" style="display: none;">Aanvaarden</button>
-                    <button type="button" class="btn btn-danger" id="rejectBtn" style="display: none;">Weigeren</button>
+                    <button type="button" class="btn btn-success" id="acceptBtn" style="display: none;">Accept</button>
+                    <button type="button" class="btn btn-danger" id="rejectBtn" style="display: none;">Reject</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+   <!-- Bootstrap Modal for Adding Event -->
+    <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEventModalLabel">Add Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="addEventForm" method="POST" action="{% url 'add_event' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p>Date: <span id="modal-add-event-date"></span></p>
+                        <div class="mb-3">
+                            <label for="start-time" class="form-label">Start Time:</label>
+                            <input type="time" name="start-time" id="start-time" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="end-time" class="form-label">End Time:</label>
+                            <input type="time" name="end-time" id="end-time" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="assistent" class="form-label">Assistent:</label>
+                            <select id="assistent" name="assistent" class="form-select"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apotheek" class="form-label">Apotheek:</label>
+                            <select id="apotheek" name="apotheek" class="form-select"></select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Event</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
