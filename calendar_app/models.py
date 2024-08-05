@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from accounts.models import User, Assistent, Apotheek
 
@@ -18,6 +20,7 @@ class Event(models.Model):
     ]
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    pauzeduur = models.SmallIntegerField(default=0, blank=True, null=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='werk')
     assistent = models.ForeignKey(Assistent, on_delete=models.CASCADE, related_name='assistentevents', null=True,
                                   blank=True)

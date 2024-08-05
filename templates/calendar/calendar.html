@@ -15,55 +15,112 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Category:</strong> <span id="modal-event-category"></span></p>
-                    <p><strong>Start:</strong> <span id="modal-event-start"></span></p>
-                    <p><strong>End:</strong> <span id="modal-event-end"></span></p>
-                    <p><strong>Apotheek:</strong> <span id="modal-event-apotheek"></span></p>
+                    <form method="POST" id="editOrDeleteForm">
+                        <p><strong>Category:</strong> <span id="modal-event-category"></span></p>
+                        <p><strong>Beginuur:</strong> <span id="modal-event-start"></span></p>
+                        <p><strong>Einduur:</strong> <span id="modal-event-end"></span></p>
+                        <p><strong>Pauzeduur in minuten:</strong> <span id="modal-event-pauzeduur"></span></p>
+                        <p><strong>Apotheek:</strong> <span id="modal-event-apotheek"></span></p>
+
+                        <button type="button" class="btn btn-success" id="acceptBtn">Aanvaarden</button>
+                        <button type="button" class="btn btn-danger" id="rejectBtn">Weigeren</button>
+                        <button type="button" class="btn btn-warning" name="editBtn" id="editBtn">Bewerken</button>
+                        <button type="button" class="btn btn-danger" name="deleteBtn" id="deleteBtn">Verwijderen</button>
+                    </form>
+
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" id="acceptBtn" style="display: none;">Accept</button>
-                    <button type="button" class="btn btn-danger" id="rejectBtn" style="display: none;">Reject</button>
+
                 </div>
             </div>
         </div>
     </div>
 
    <!-- Bootstrap Modal for Adding Event -->
+    <!-- Add/Edit Event Modal -->
     <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addEventModalLabel">Add Event</h5>
+                    <h5 class="modal-title" id="addEventModalLabel">Add/Edit Event</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="addEventForm" method="POST" action="{% url 'add_event' %}">
                     {% csrf_token %}
                     <div class="modal-body">
-                        <p>Date: <span id="modal-add-event-date"></span></p>
+                        <input type="hidden" id="modal-add-event-date" />
                         <div class="mb-3">
-                            <label for="start-time" class="form-label">Start Time:</label>
-                            <input type="time" name="start-time" id="start-time" class="form-control">
+                            <label for="start-time" class="form-label">Beginuur</label>
+                            <input type="time" class="form-control" id="start-time" />
                         </div>
                         <div class="mb-3">
-                            <label for="end-time" class="form-label">End Time:</label>
-                            <input type="time" name="end-time" id="end-time" class="form-control">
+                            <label for="end-time" class="form-label">Einduur</label>
+                            <input type="time" class="form-control" id="end-time" />
                         </div>
                         <div class="mb-3">
-                            <label for="assistent" class="form-label">Assistent:</label>
-                            <select id="assistent" name="assistent" class="form-select"></select>
+                            <label for="pauzeduur" class="form-label">Pauzeduur in minuten</label>
+                            <input type="number" class="form-control" id="pauzeduur" />
                         </div>
                         <div class="mb-3">
-                            <label for="apotheek" class="form-label">Apotheek:</label>
-                            <select id="apotheek" name="apotheek" class="form-select"></select>
+                            <label for="assistent" class="form-label">Naam van assistent</label>
+                            <select class="form-select" id="assistent"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apotheek" class="form-label">Naam van apotheek</label>
+                            <select class="form-select" id="apotheek"></select>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save Event</button>
+                        <button type="submit" class="btn btn-primary">Opslaan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+       <!-- Edit Event Modal -->
+    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editEventForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" id="edit-event-id" name="event_id" />
+                    <div class="modal-body">
+                        <input type="hidden" id="modal-edit-event-date" name="date" />
+                        <div class="mb-3">
+                            <label for="start-edit-time" class="form-label">Beginuur</label>
+                            <input type="time" class="form-control" id="start-edit-time" name="startTime" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="end-edit-time" class="form-label">Einduur</label>
+                            <input type="time" class="form-control" id="end-edit-time" name="endTime" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_pauzeduur" class="form-label">Pauzeduur in minuten</label>
+                            <input type="number" class="form-control" id="edit_pauzeduur" name="pauzeDuur" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_assistent" class="form-label">Naam van assistent</label>
+                            <select class="form-select" id="edit_assistent" name="assistent"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_apotheek" class="form-label">Naam van apotheek</label>
+                            <select class="form-select" id="edit_apotheek" name="apotheek"></select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Opslaan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
