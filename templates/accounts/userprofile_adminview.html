@@ -21,7 +21,7 @@
             {% endif %}
             <li class="nav-item">
                <a class="nav-link" href="{% url 'change_password' %}">
-               <i class="fas fa-key"></i></i>&nbsp;&nbsp; Verander wachtwoord
+               <i class="fas fa-key"></i>&nbsp;&nbsp; Verander wachtwoord
                </a>
             </li>
          </ul>
@@ -29,7 +29,7 @@
             <h5 class="card-header">Profielgegevens</h5>
             <!-- Account -->
             <div class="card-body">
-               <form id="formAccountSettings" method="POST" action="{% url 'edit_userprofile' %}" enctype="multipart/form-data">
+               <form id="formAccountSettings" method="POST" action="{% url 'edit_assistentprofile' assistent_id %}" enctype="multipart/form-data">
                   {% csrf_token %}
                   <!-- Display form errors -->
                   {% if form.errors %}
@@ -46,7 +46,7 @@
                   {% endif %}
                   <div class="d-flex align-items-start align-items-sm-center gap-4 mb-4">
                      <img
-                        src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/img/avatars/default.jpg' %}{% endif %}"
+                        src="{% if gebruiker.profile_picture %}{{ gebruiker.profile_picture.url }}{% else %}{% static 'assets/img/avatars/default.jpg' %}{% endif %}"
                         alt="user-avatar"
                         class="d-block rounded"
                         height="100"
@@ -67,7 +67,7 @@
                            onchange="previewImage(event)"
                            />
                         </label>
-                        <button type="button" class="btn btn-outline-secondary account-image-reset mb-4" onclick="deleteProfilePicture()">
+                        <button type="button" class="btn btn-outline-secondary account-image-reset mb-4" onclick="document.getElementById('deleteProfilePictureForm').submit()">
                         <i class="bx bx-reset d-block d-sm-none"></i>
                         <span class="d-none d-sm-block">Verwijder Profielfoto</span>
                         </button>
@@ -81,7 +81,7 @@
                            type="text"
                            id="firstName"
                            name="first_name"
-                           value="{{ user.first_name }}"
+                           value="{{ gebruiker.first_name }}"
                            readonly
                            />
                      </div>
@@ -92,7 +92,7 @@
                            type="text"
                            id="lastName"
                            name="last_name"
-                           value="{{ user.last_name }}"
+                           value="{{ gebruiker.last_name }}"
                            readonly
                            />
                      </div>
@@ -104,7 +104,7 @@
                            id="email"
                            name="email"
                            placeholder="Gelieve je mailadres in te geven"
-                           value="{{ user.email }}"
+                           value="{{ gebruiker.email }}"
                            autofocus
                            />
                      </div>
@@ -117,7 +117,7 @@
                               name="phone_number"
                               class="form-control"
                               placeholder="Gelieve je telefoonnummer in te geven"
-                              value="{{ user.phone_number }}"
+                              value="{{ gebruiker.phone_number }}"
                               />
                         </div>
                      </div>
@@ -127,7 +127,7 @@
                      <button type="reset" class="btn btn-outline-secondary" onclick="window.location.href='{% url 'home' %}'">Annuleer wijzigingen</button>
                   </div>
                </form>
-               <form id="deleteProfilePictureForm" method="POST" action="{% url 'edit_userprofile' %}" style="display: none;">
+               <form id="deleteProfilePictureForm" method="POST" action="{% url 'edit_assistentprofile' assistent_id %}" style="display: none;">
                   {% csrf_token %}
                   <input type="hidden" name="delete_profile_picture" value="true">
                </form>
