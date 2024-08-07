@@ -3,8 +3,8 @@ from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from .decorators import admin_required, role_required
 
+from .decorators import role_required
 from .forms import UserCreationForm, AssistentForm, ApotheekForm, UserEditForm, ChangePasswordForm
 from .models import User, Assistent, Apotheek
 
@@ -147,14 +147,29 @@ def overview_assistenten(request):
 @login_required(login_url='login')
 @role_required(3)
 def overview_apotheken(request):
-    return render(request, 'accounts/overview_apotheken.html')
+    apotheken = Apotheek.objects.all().order_by('user__last_name')
+    context = {
+        'apotheken': apotheken
+    }
+    return render(request, 'accounts/overview_apotheken.html', context)
 
 
 @login_required(login_url='login')
-def edit_assistentprofile(request, assistent_id):
+@role_required(3)
+def edit_userprofile_admin(request, user_id):
     # Fetch the Assistent object and its associated User
-    assistent = get_object_or_404(Assistent, id=assistent_id)
-    gebruiker = assistent.user
+    assistent_id = 0
+    apotheek_id = 0
+    gebruiker = get_object_or_404(User, id=user_id)
+    if gebruiker.role == 1:
+        assistent = get_object_or_404(Assistent, user=gebruiker)
+        assistent_id = assistent.id
+
+    else:
+        apotheek = get_object_or_404(Apotheek, user=gebruiker)
+        apotheek_id = apotheek.id
+
+    user_id = gebruiker.id
 
     if request.method == 'POST':
         # Handle deletion of profile picture
@@ -164,20 +179,105 @@ def edit_assistentprofile(request, assistent_id):
                 gebruiker.profile_picture = None  # Set the profile picture field to None
                 gebruiker.save()
                 messages.success(request, "Profielfoto is verwijderd")
-            return redirect('edit_assistentprofile', assistent_id=assistent_id)
+            return redirect('edit_userprofile_admin', user_id=user_id)
 
         # Handle form submission for editing user details
         form = UserEditForm(request.POST, request.FILES, instance=gebruiker)
         if form.is_valid():
             form.save()
             messages.success(request, "Gebruikersprofiel werd aangepast")
-            return redirect('edit_assistentprofile', assistent_id=assistent_id)
+            return redirect('edit_userprofile_admin', user_id=user_id)
     else:
-        print("ELSE")
         form = UserEditForm(instance=gebruiker)
         context = {
             'form': form,
             'assistent_id': assistent_id,
-            'gebruiker': gebruiker
+            'apotheek_id': apotheek_id,
+            'gebruiker': gebruiker,
+            'user_id': user_id,
         }
         return render(request, 'accounts/userprofile_adminview.html', context=context)
+
+
+@login_required(login_url='login')
+@role_required(3)
+def edit_companyprofile_assistent_admin(request, assistent_id):
+    assistent = get_object_or_404(Assistent, id=assistent_id)
+    gebruiker = assistent.user
+    user_id = gebruiker.id
+
+    if request.method == 'POST':
+        form = AssistentForm(request.POST, request.FILES, instance=assistent)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Bedrijfsprofiel werd aangepast")
+            return redirect('edit_companyprofile_assistent_admin', assistent_id=assistent_id)
+        else:
+            print(form.errors)
+    else:
+        form = AssistentForm(instance=assistent)
+
+    context = {
+        'gebruiker': gebruiker,
+        'user_id': user_id,
+        'assistent_id': assistent_id,
+        'form': form
+    }
+
+    return render(request, 'accounts/companyprofile_assistent_admin.html', context)
+
+
+@login_required(login_url='login')
+@role_required(3)
+def edit_companyprofile_apotheek_admin(request, apotheek_id):
+    apotheek = get_object_or_404(Apotheek, id=apotheek_id)
+    gebruiker = apotheek.user
+    user_id = gebruiker.id
+
+    if request.method == 'POST':
+        form = ApotheekForm(request.POST, request.FILES, instance=apotheek)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Bedrijfsprofiel werd aangepast")
+            return redirect('edit_companyprofile_apotheek_admin', apotheek_id=apotheek_id)
+        else:
+            print(form.errors)
+    else:
+        form = ApotheekForm(instance=apotheek)
+
+    context = {
+        'gebruiker': gebruiker,
+        'user_id': user_id,
+        'apotheek_id': apotheek_id,
+        'form': form
+    }
+
+    return render(request, 'accounts/companyprofile_apotheek_admin.html', context)
+
+
+@login_required
+@role_required(3)
+def change_password_user(request, user_id):
+    gebruiker = get_object_or_404(User, id=user_id)
+    assistent = get_object_or_404(Assistent, user=gebruiker)
+    assistent_id = assistent.id
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            new_password = form.cleaned_data['password']
+            gebruiker.set_password(new_password)
+            gebruiker.save()
+
+            messages.success(request, 'Wachtwoord werd succesvol aangepast!')
+            return redirect('overview_assistenten')  # Redirect to a success page or profile page
+    else:
+        form = ChangePasswordForm()
+        context = {
+            'gebruiker': gebruiker,
+            'user_id': user_id,
+            'assistent_id': assistent_id,
+            'form': form
+        }
+
+        return render(request, 'accounts/change_password_admin.html', context)
+

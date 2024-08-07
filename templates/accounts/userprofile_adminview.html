@@ -8,19 +8,25 @@
       <div class="col-md-12">
          <ul class="nav nav-pills flex-column flex-md-row mb-3">
             <li class="nav-item">
-               <a class="nav-link active" href="{% url 'edit_userprofile' %}">
+               <a class="nav-link active" href="{% url 'edit_userprofile_admin' user_id %}">
                <i class="fas fa-user"></i>&nbsp;&nbsp; Persoonsgegevens
                </a>
             </li>
-            {% if user.role == 1 or user.role == 2 %}
+            {% if gebruiker.role == 1 %}
             <li class="nav-item">
-               <a class="nav-link" href="{% url 'edit_companyprofile' %}">
+               <a class="nav-link" href="{% url 'edit_companyprofile_assistent_admin' assistent_id %}">
+               <i class="fas fa-building"></i>&nbsp;&nbsp; Bedrijfsgegevens
+               </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+               <a class="nav-link" href="{% url 'edit_companyprofile_apotheek_admin' apotheek_id %}">
                <i class="fas fa-building"></i>&nbsp;&nbsp; Bedrijfsgegevens
                </a>
             </li>
             {% endif %}
             <li class="nav-item">
-               <a class="nav-link" href="{% url 'change_password' %}">
+               <a class="nav-link" href="{% url 'change_password_user' user_id %}">
                <i class="fas fa-key"></i>&nbsp;&nbsp; Verander wachtwoord
                </a>
             </li>
@@ -29,7 +35,7 @@
             <h5 class="card-header">Profielgegevens</h5>
             <!-- Account -->
             <div class="card-body">
-               <form id="formAccountSettings" method="POST" action="{% url 'edit_assistentprofile' assistent_id %}" enctype="multipart/form-data">
+               <form id="formAccountSettings" method="POST" action="{% url 'edit_userprofile_admin' user_id %}" enctype="multipart/form-data">
                   {% csrf_token %}
                   <!-- Display form errors -->
                   {% if form.errors %}
@@ -124,10 +130,10 @@
                   </div>
                   <div class="mt-2">
                      <button type="submit" class="btn btn-primary me-2">Sla wijzigingen op</button>
-                     <button type="reset" class="btn btn-outline-secondary" onclick="window.location.href='{% url 'home' %}'">Annuleer wijzigingen</button>
+                     <button type="reset" class="btn btn-outline-secondary" onclick="window.location.href='{% url 'overview_assistenten' %}'">Annuleer wijzigingen</button>
                   </div>
                </form>
-               <form id="deleteProfilePictureForm" method="POST" action="{% url 'edit_assistentprofile' assistent_id %}" style="display: none;">
+               <form id="deleteProfilePictureForm" method="POST" action="{% url 'edit_userprofile_admin' user_id %}" style="display: none;">
                   {% csrf_token %}
                   <input type="hidden" name="delete_profile_picture" value="true">
                </form>

@@ -45,7 +45,7 @@
                         <td><span class="badge text-bg-danger">Niet Actief</span></td>
                         {% endif %}
                         <td>
-                           <a href="{% url 'edit_assistentprofile' assistent.id %}" aria-label="Edit">
+                           <a href="{% url 'edit_userprofile_admin' assistent.user.id %}" aria-label="Edit">
                               <i class="fas fa-edit"></i>
                            </a>
                         </td>
