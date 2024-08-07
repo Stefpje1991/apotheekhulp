@@ -31,43 +31,6 @@ def logout(request):
     return redirect('home')
 
 
-@role_required(3)
-def register(request):
-    if request.method == 'POST':
-        user_form = UserCreationForm(request.POST)
-        assistent_form = ""
-        apotheek_form = ""
-        if user_form.is_valid():
-            user = user_form.save(commit=False)
-            user.set_password(user_form.cleaned_data['password'])
-            role = user_form.cleaned_data.get('role')
-            user.username = user.email
-            user.save()
-            if role == User.ASSISTENT:
-                assistent_form = AssistentForm(request.POST)
-                if assistent_form.is_valid():
-                    assistent = assistent_form.save(commit=False)
-                    assistent.user = user
-                    assistent.save()
-            elif role == User.APOTHEEK:
-                apotheek_form = ApotheekForm(request.POST)
-                if apotheek_form.is_valid():
-                    apotheek = apotheek_form.save(commit=False)
-                    apotheek.user = user
-                    apotheek.save()
-            return redirect('home')
-    else:
-        user_form = UserCreationForm()
-        assistent_form = AssistentForm()
-        apotheek_form = ApotheekForm()
-
-    return render(request, 'accounts/register.html', {
-        'user_form': user_form,
-        'assistent_form': assistent_form,
-        'apotheek_form': apotheek_form,
-    })
-
-
 @login_required(login_url='login')
 def edit_userprofile(request):
     if request.method == 'POST':
@@ -141,7 +104,7 @@ def overview_assistenten(request):
     context = {
         'assistenten': assistenten
     }
-    return render(request, 'accounts/overview_assistenten.html', context)
+    return render(request, 'accounts/admin/overview_assistenten_admin.html', context)
 
 
 @login_required(login_url='login')
@@ -151,7 +114,7 @@ def overview_apotheken(request):
     context = {
         'apotheken': apotheken
     }
-    return render(request, 'accounts/overview_apotheken.html', context)
+    return render(request, 'accounts/admin/overview_apotheken_admin.html', context)
 
 
 @login_required(login_url='login')
@@ -196,7 +159,7 @@ def edit_userprofile_admin(request, user_id):
             'gebruiker': gebruiker,
             'user_id': user_id,
         }
-        return render(request, 'accounts/userprofile_adminview.html', context=context)
+        return render(request, 'accounts/admin/userprofile_admin.html', context=context)
 
 
 @login_required(login_url='login')
@@ -224,7 +187,7 @@ def edit_companyprofile_assistent_admin(request, assistent_id):
         'form': form
     }
 
-    return render(request, 'accounts/companyprofile_assistent_admin.html', context)
+    return render(request, 'accounts/admin/companyprofile_assistent_admin.html', context)
 
 
 @login_required(login_url='login')
@@ -252,7 +215,7 @@ def edit_companyprofile_apotheek_admin(request, apotheek_id):
         'form': form
     }
 
-    return render(request, 'accounts/companyprofile_apotheek_admin.html', context)
+    return render(request, 'accounts/admin/companyprofile_apotheek_admin.html', context)
 
 
 @login_required
@@ -279,5 +242,62 @@ def change_password_user(request, user_id):
             'form': form
         }
 
-        return render(request, 'accounts/change_password_admin.html', context)
+        return render(request, 'accounts/admin/change_password_admin.html', context)
 
+
+@login_required
+@role_required(3)
+def add_nieuwe_assistent_admin(request):
+    if request.method == 'POST':
+        user_form = UserCreationForm(request.POST)
+        assistent_form = AssistentForm(request.POST)
+        print(request.POST)
+        if user_form.is_valid() and assistent_form.is_valid():
+            user = user_form.save(commit=False)
+            user.set_password(user_form.cleaned_data['password'])  # Use password1 for password validation
+            user.username = user.email
+            user.role = 1
+            user.save()
+
+            assistent = assistent_form.save(commit=False)
+            assistent.user = user
+            assistent.save()
+            messages.success(request, 'Assistent werd succesvol aangemaakt')
+            return redirect('overview_assistenten')
+    else:
+        user_form = UserCreationForm()
+        assistent_form = AssistentForm()
+
+    return render(request, 'accounts/admin/nieuwe_assistent_admin.html', {
+        'user_form': user_form,
+        'assistent_form': assistent_form,
+    })
+
+
+@login_required
+@role_required(3)
+def add_nieuwe_apotheek_admin(request):
+    if request.method == 'POST':
+        user_form = UserCreationForm(request.POST)
+        apotheek_form = ApotheekForm(request.POST)
+
+        if user_form.is_valid() and apotheek_form.is_valid():
+            user = user_form.save(commit=False)
+            user.set_password(user_form.cleaned_data['password'])  # Use password1 for password validation
+            user.username = user.email
+            user.role = 1
+            user.save()
+
+            assistent = apotheek_form.save(commit=False)
+            assistent.user = user
+            assistent.save()
+            messages.success(request, 'Apotheek werd succesvol aangemaakt')
+            return redirect('overview_assistenten')
+    else:
+        user_form = UserCreationForm()
+        apotheek_form = ApotheekForm()
+
+    return render(request, 'accounts/admin/nieuwe_apotheek_admin.html', {
+        'user_form': user_form,
+        'apotheek_form': apotheek_form,
+    })

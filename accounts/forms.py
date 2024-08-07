@@ -45,13 +45,14 @@ class UserCreationForm(forms.ModelForm):
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'phone_number', 'profile_picture']
+        fields = ['email', 'first_name', 'last_name', 'phone_number', 'profile_picture', 'is_active']
         labels = {
             'phone_number': 'Telefoonnummer',
             'email': 'E-mail',
             'first_name': 'Voornaam',
             'last_name': 'Achternaam',
             'profile_picture': 'Profielfoto',
+            'is_active': 'Is Actief'
         }
 
     def clean(self):
@@ -62,8 +63,7 @@ class AssistentForm(forms.ModelForm):
     class Meta:
         model = Assistent
         fields = ['assistent_btwNummer', 'assistent_btwPlichtig', 'assistent_naamBedrijf', 'assistent_straatBedrijf',
-                  'assistent_huisnummerBedrijf', 'assistent_postcodeBedrijf', 'assistent_stadBedrijf',
-                  'assistent_krijgtKilometervergoeding', 'assistent_uurtarief']
+                  'assistent_huisnummerBedrijf', 'assistent_postcodeBedrijf', 'assistent_stadBedrijf']
         labels = {
             'assistent_btwNummer': 'BTW Nummer',
             'assistent_btwPlichtig': 'BTW Plichtig',
@@ -72,8 +72,6 @@ class AssistentForm(forms.ModelForm):
             'assistent_huisnummerBedrijf': 'Huisnummer Bedrijf',
             'assistent_postcodeBedrijf': 'Postcode Bedrijf',
             'assistent_stadBedrijf': 'Stad Bedrijf',
-            'assistent_krijgtKilometervergoeding': 'Krijgt Kilometervergoeding',
-            'assistent_uurtarief': 'Uurtarief',
         }
 
 
@@ -81,8 +79,8 @@ class ApotheekForm(forms.ModelForm):
     class Meta:
         model = Apotheek
         fields = ['apotheek_btwNummer', 'apotheek_btwPlichtig', 'apotheek_naamBedrijf', 'apotheek_straatBedrijf',
-                  'apotheek_huisnummerBedrijf', 'apotheek_postcodeBedrijf', 'apotheek_stadBedrijf',
-                  'apotheek_uurtarief']
+                  'apotheek_huisnummerBedrijf', 'apotheek_postcodeBedrijf', 'apotheek_stadBedrijf'
+                  ]
         labels = {
             'apotheek_btwNummer': 'BTW Nummer',
             'apotheek_btwPlichtig': 'BTW Plichtig',
@@ -91,7 +89,6 @@ class ApotheekForm(forms.ModelForm):
             'apotheek_huisnummerBedrijf': 'Huisnummer Bedrijf',
             'apotheek_postcodeBedrijf': 'Postcode Bedrijf',
             'apotheek_stadBedrijf': 'Stad Bedrijf',
-            'apotheek_uurtarief': 'Uurtarief',
         }
 
 

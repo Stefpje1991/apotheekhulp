@@ -14,27 +14,27 @@
             </li>
             {% if gebruiker.role == 1 %}
             <li class="nav-item">
-               <a class="nav-link" href="{% url 'edit_companyprofile_assistent_admin' assistent_id %}">
+               <a class="nav-link active" href="{% url 'edit_companyprofile_assistent_admin' assistent_id %}">
                <i class="fas fa-building"></i>&nbsp;&nbsp; Bedrijfsgegevens
                </a>
             </li>
             {% else %}
             <li class="nav-item">
-               <a class="nav-link" href="{% url 'edit_companyprofile_apotheek_admin' apotheek_id %}">
+               <a class="nav-link active" href="{% url 'edit_companyprofile_apotheek_admin' apotheek_id %}">
                <i class="fas fa-building"></i>&nbsp;&nbsp; Bedrijfsgegevens
                </a>
             </li>
             {% endif %}
             <li class="nav-item">
                <a class="nav-link" href="{% url 'change_password_user' user_id %}">
-               <i class="fas fa-key"></i>&nbsp;&nbsp; Verander wachtwoord
+               <i class="fas fa-key"></i>&nbsp;&nbsp; Wijzig wachtwoord
                </a>
             </li>
          </ul>
          <div class="card mb-4">
             <h5 class="card-header">Bedrijfsprofielgegevens</h5>
             <div class="card-body">
-               <form id="formCompanyProfileSettings" method="POST" action="{% url 'edit_companyprofile_apotheek_admin' apotheek_id %}" enctype="multipart/form-data">
+               <form id="formCompanyProfileSettings2" method="POST" action="{% url 'edit_companyprofile_assistent_admin' assistent_id %}" enctype="multipart/form-data">
                   {% csrf_token %}
                   <!-- Display form errors -->
                   {% if form.errors %}
@@ -52,7 +52,7 @@
                   {{ form|crispy }}
                   <div class="mt-2">
                      <button type="submit" class="btn btn-primary me-2">Sla wijzigingen op</button>
-                     <button type="reset" class="btn btn-outline-secondary" onclick="window.location.href='{% url 'home' %}'">Annuleer wijzigingen</button>
+                     <button type="reset" class="btn btn-outline-secondary" onclick="window.location.href='{% url 'overview_assistenten' %}'">Annuleer wijzigingen</button>
                   </div>
                </form>
             </div>

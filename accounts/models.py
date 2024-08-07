@@ -88,8 +88,6 @@ class Assistent(models.Model):
     assistent_huisnummerBedrijf = models.CharField(max_length=10, null=True, blank=True)
     assistent_postcodeBedrijf = models.CharField(max_length=10, null=True, blank=True)
     assistent_stadBedrijf = models.CharField(max_length=200, null=True, blank=True)
-    assistent_krijgtKilometervergoeding = models.BooleanField(default=True)
-    assistent_uurtarief = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.user.email
@@ -105,7 +103,6 @@ class Apotheek(models.Model):
     apotheek_huisnummerBedrijf = models.CharField(max_length=10, null=True, blank=True)
     apotheek_postcodeBedrijf = models.CharField(max_length=10, null=True, blank=True)
     apotheek_stadBedrijf = models.CharField(max_length=200, null=True, blank=True)
-    apotheek_uurtarief = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.user.email

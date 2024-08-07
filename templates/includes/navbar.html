@@ -16,14 +16,6 @@
          <div data-i18n="Analytics">Kalender</div>
       </a>
    </li>
-   {% if user.role == 3 %}
-   <li class="menu-item {% active request 'register' %}">
-      <a href="{% url 'register' %}" class="menu-link">
-         <i class="fa-solid fa-user-plus me-2"></i>
-         <div data-i18n="Analytics">Nieuwe Gebruiker</div>
-      </a>
-   </li>
-   {% endif %}
    <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
          <i class="fas fa-id-card me-2"></i>
