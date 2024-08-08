@@ -221,9 +221,15 @@ def edit_companyprofile_apotheek_admin(request, apotheek_id):
 @login_required
 @role_required(3)
 def change_password_user(request, user_id):
+    assistent_id = 0
+    apotheek_id = 0
     gebruiker = get_object_or_404(User, id=user_id)
-    assistent = get_object_or_404(Assistent, user=gebruiker)
-    assistent_id = assistent.id
+    if gebruiker.role == 1:
+        assistent = get_object_or_404(Assistent, user=gebruiker)
+        assistent_id = assistent.id
+    elif gebruiker. role == 2:
+        apotheek = get_object_or_404(Apotheek, user=gebruiker)
+        apotheek_id = apotheek.id
     if request.method == 'POST':
         form = ChangePasswordForm(request.POST)
         if form.is_valid():
@@ -232,13 +238,17 @@ def change_password_user(request, user_id):
             gebruiker.save()
 
             messages.success(request, 'Wachtwoord werd succesvol aangepast!')
-            return redirect('overview_assistenten')  # Redirect to a success page or profile page
+            if gebruiker.role == 1:
+                return redirect('overview_assistenten')  # Redirect to a success page or profile page
+            elif gebruiker.role == 2:
+                return redirect('overview_apotheken')
     else:
         form = ChangePasswordForm()
         context = {
             'gebruiker': gebruiker,
             'user_id': user_id,
             'assistent_id': assistent_id,
+            'apotheek_id': apotheek_id,
             'form': form
         }
 
