@@ -1,5 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
+    if (!calendarEl) {
+        console.error('Element with ID "calendar" not found');
+        return; // Exit if the element is not found
+    }
+
+    var userRole = calendarEl.getAttribute('data-user-role');
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialDate: new Date(),
         editable: true,
@@ -58,7 +64,11 @@ document.addEventListener('DOMContentLoaded', function() {
             showEventDetails(info.event);
         },
         dateClick: function(info) {
-            showAddEventModal(info.dateStr);
+            if (userRole === "3") {  // Note: userRole will be a string
+                showAddEventModal(info.dateStr);
+            } else {
+                console.log('User role is not authorized to add events');
+            }
         }
     });
 

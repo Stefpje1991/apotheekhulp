@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container-xxl flex-grow-1 container-p-y">
-   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Profiel Instellingen /</span> Bedrijfsprofiel</h4>
+   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Profiel Instellingen /</span> Bedrijfsgegevens</h4>
    <div class="row">
       <div class="col-md-12">
          <ul class="nav nav-pills flex-column flex-md-row mb-3">
@@ -32,7 +32,7 @@
             </li>
          </ul>
          <div class="card mb-4">
-            <h5 class="card-header">Bedrijfsprofielgegevens</h5>
+            <h5 class="card-header">Bedrijfsgegevens</h5>
             <div class="card-body">
                <form id="formCompanyProfileSettings2" method="POST" action="{% url 'edit_companyprofile_assistent_admin' assistent_id %}" enctype="multipart/form-data">
                   {% csrf_token %}

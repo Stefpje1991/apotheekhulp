@@ -14,11 +14,14 @@ from .models import Assistent, Apotheek, Event
 
 logger = logging.getLogger(__name__)
 
+
 def calendar_view(request):
+    user_role = request.user.role if request.user.is_authenticated else None
     context = {
-        'user_role': request.user.role
+        'user_role': user_role
     }
     return render(request, 'calendar/calendar.html', context)
+
 
 def events_json(request):
     try:
@@ -61,6 +64,7 @@ def events_json(request):
         logger.error("Unexpected error in events_json: %s", str(e))
         return JsonResponse({'error': str(e)}, status=500)
 
+
 @csrf_exempt
 def update_event_status(request, event_id, action):
     if request.method == 'POST':
@@ -81,6 +85,7 @@ def update_event_status(request, event_id, action):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
 def fetch_assistents(request):
     if request.method == 'GET':
         assistents = Assistent.objects.all()
@@ -93,6 +98,7 @@ def fetch_assistents(request):
         ]
         return JsonResponse(assistents_list, safe=False)
 
+
 def fetch_apotheken(request):
     if request.method == 'GET':
         apotheken = Apotheek.objects.all()
@@ -104,6 +110,7 @@ def fetch_apotheken(request):
             for apotheek in apotheken
         ]
         return JsonResponse(apotheken_list, safe=False)
+
 
 @csrf_exempt
 def add_event(request):
@@ -158,6 +165,7 @@ def add_event(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
 @csrf_exempt
 def edit_event(request, event_id):
     if request.method == 'POST':
@@ -206,6 +214,7 @@ def edit_event(request, event_id):
             return JsonResponse({'error': 'Error bij editen', 'details': str(e)}, status=404)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 @csrf_exempt
 def delete_event(request, event_id):
