@@ -1,5 +1,12 @@
 'use strict';
 
+const labelMappings = {
+    afstandinkilometers: "Afstand in Kilometers",
+    uurtariefassistent: "Uurtarief van Assistent",
+    uurtariefapotheek: "Uurtarief aan Apotheek"
+    // Add more mappings as needed
+};
+
 let menu, animate;
 
 (function () {
@@ -164,28 +171,42 @@ $(document).ready(function() {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Select all rows in the table
     const tableRows = document.querySelectorAll("#tbl_assistenten tbody tr");
 
     const addLinkForm = document.getElementById('addLinkForm');
     const addLinkModal = new bootstrap.Modal(document.getElementById('addLinkModal'));
     var assistentId = document.getElementById('modalAssistentId').value;
-   var apotheekId = document.getElementById('modalApotheekId').value;
+    var apotheekId = document.getElementById('modalApotheekId').value;
 
-   // Set Assistent data if available
-   if (assistentId) {
-       var assistentName = "{{ assistent.user.first_name }} {{ assistent.user.last_name }}";
-       document.querySelector('[name="assistent"]').value = assistentName;
-   }
+    // Fetching data from data-* attributes
+    const assistentName = document.getElementById('assistentData').dataset.assistentName;
+    const apotheekName = document.getElementById('apotheekData').dataset.apotheekName;
 
-   // Set Apotheek data if available
-   if (apotheekId) {
-       var apotheekName = "{{ apotheek.apotheek_naamBedrijf }}";
-       document.querySelector('[name="apotheek"]').value = apotheekName;
-   }
+    // Set Assistent data if available
+    if (assistentName) {
+        // Preselect the dropdown option by text content
+        const assistentDropdown = document.querySelector('[name="assistent"]');
+        for (let option of assistentDropdown.options) {
+            if (option.textContent.trim() === assistentName.trim()) {
+                option.selected = true;
+                break;
+            }
+        }
+    }
+    // Set Apotheek data if available
+    if (apotheekName) {
+        // Preselect the dropdown option by text content
+        const apotheekDropdown = document.querySelector('[name="apotheek"]');
+        for (let option of apotheekDropdown.options) {
+            if (option.textContent.trim() === apotheekName.trim()) {
+                option.selected = true;
+                break;
+            }
+        }
+    }
 
     addLinkForm.addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault();
 
         const formData = new FormData(addLinkForm);
 
@@ -193,22 +214,17 @@ document.addEventListener("DOMContentLoaded", function () {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest' // To indicate AJAX request
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Handle success - e.g., reset form, close modal
                 addLinkForm.reset();
                 addLinkModal.hide();
                 location.reload();
-
-                // Optionally update the table or page content
-                // updateTable(data); // Function to update table with new data
             } else {
-                // Handle validation errors
-                displayErrors(data.errors); // Function to display errors
+                displayErrors(data.errors);
             }
         })
         .catch(error => {
@@ -217,13 +233,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function displayErrors(errors) {
-        // Clear previous errors
         const alertContainer = document.querySelector('#addLinkModal .alert');
         if (alertContainer) {
             alertContainer.innerHTML = '';
         }
 
-        // Display new errors
         const alertDiv = document.createElement('div');
         alertDiv.className = 'alert alert-danger';
         for (const field in errors) {
@@ -240,15 +254,12 @@ document.addEventListener("DOMContentLoaded", function () {
         modalBody.insertBefore(alertDiv, modalBody.firstChild);
     }
 
-    // Add a click event listener to each row
     tableRows.forEach(function (row) {
         row.addEventListener("click", function (event) {
-            // Check if the clicked element is the edit button or inside it
             if (event.target.closest('.edit-btn')) {
-                return; // Do nothing if edit button is clicked
+                return;
             }
 
-            // Get the data from the clicked row
             const firstName = row.getAttribute("data-first-name");
             const lastName = row.getAttribute("data-last-name");
             const email = row.getAttribute("data-email");
@@ -262,7 +273,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const postcodeBedrijf = row.getAttribute("data-postcode-bedrijf");
             const stadBedrijf = row.getAttribute("data-stad-bedrijf");
 
-            // Populate the modal with the data
             document.getElementById("modalFirstName").textContent = firstName;
             document.getElementById("modalLastName").textContent = lastName;
             document.getElementById("modalEmail").textContent = email;
@@ -276,10 +286,8 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("modalPostcodeBedrijf").textContent = postcodeBedrijf || "N/A";
             document.getElementById("modalStadBedrijf").textContent = stadBedrijf || "N/A";
 
-            // Show the modal
             var myModal = new bootstrap.Modal(document.getElementById('rowClickModal'));
             myModal.show();
         });
     });
 });
-

@@ -19,7 +19,7 @@
                <h5 class="mb-0">Overzicht van de verbonden assistenten</h5>
                {% endif %}
                <!-- Button positioned at the top right of the card-header -->
-               <button type="button" class="btn btn-primary position-absolute top-50 end-0 translate-middle-y me-3" data-bs-toggle="modal" data-bs-target="#addLinkModal">Nieuwe Link</button>
+               <button type="button" class="btn btn-primary position-absolute top-50 end-0 translate-middle-y me-3" data-bs-toggle="modal" data-bs-target="#addLinkModal"><i class="fas fa-plus"></i>&nbsp;&nbsp;Nieuwe Link</button>
             </div>
             <!-- Account -->
             <div class="card-body">
@@ -69,7 +69,7 @@
    <div class="modal-dialog">
       <div class="modal-content">
          <div class="modal-header">
-            <h5 class="modal-title" id="addLinkModalLabel">Add New Link</h5>
+            <h5 class="modal-title" id="addLinkModalLabel">Voeg nieuwe link toe</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <form id="addLinkForm" method="post" action="{% url 'overview_link_assistent_apotheek_admin' user_id %}">
@@ -77,6 +77,8 @@
                {% csrf_token %}
                <input type="hidden" name="assistent_id" id="modalAssistentId" value="{{ assistent_id }}">
                <input type="hidden" name="apotheek_id" id="modalApotheekId" value="{{ apotheek_id }}">
+               <div id="assistentData" data-assistent-name="{{ assistent.user.first_name }} {{ assistent.user.last_name }}"></div>
+               <div id="apotheekData" data-apotheek-name="{{ apotheek.apotheek_naamBedrijf }}"></div>
                <!-- Display form errors -->
                {% if form.errors %}
                <div class="alert alert-danger">
@@ -106,4 +108,5 @@
       {% include 'includes/alerts.html' %}
    </div>
 </div>
+
 {% endblock %}
