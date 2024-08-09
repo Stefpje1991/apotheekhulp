@@ -8,9 +8,11 @@ class LinkBetweenAssistentAndApotheek(models.Model):
     apotheek = models.ForeignKey(Apotheek, on_delete=models.CASCADE)
 
     # New fields
-    uurtarief = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    fietsvergoeding = models.BooleanField(default=True)
+    uurtariefAssistent = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    uurtariefApotheek = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    kilometervergoeding = models.BooleanField(default=True)
     afstandInKilometers = models.IntegerField(blank=True, null=True)
+    actief = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('assistent', 'apotheek')  # Ensure unique pairs

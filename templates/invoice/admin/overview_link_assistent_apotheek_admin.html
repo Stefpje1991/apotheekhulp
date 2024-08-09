@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+   {% if gebruiker.role == 1 %}
+   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Profiel Instellingen /</span> Verbonden Apotheken</h4>
+   {% else %}
+   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Profiel Instellingen /</span> Verbonden Assistenten</h4>
+   {% endif %}
+   <div class="row">
+      <div class="col-md-12">
+         {% include 'includes/user_nav.html' %}
+         <div class="card mb-4">
+            <div class="card-header position-relative">
+               {% if gebruiker.role == 1 %}
+               <h5 class="mb-0">Overzicht van de verbonden apotheken</h5>
+               {% else %}
+               <h5 class="mb-0">Overzicht van de verbonden assistenten</h5>
+               {% endif %}
+               <!-- Button positioned at the top right of the card-header -->
+               <button type="button" class="btn btn-primary position-absolute top-50 end-0 translate-middle-y me-3" data-bs-toggle="modal" data-bs-target="#addLinkModal">Nieuwe Link</button>
+            </div>
+            <!-- Account -->
+            <div class="card-body">
+               <table id="tbl_link_assistenten_apotheken" name="tbl_link_assistenten_apotheken" class="table table-hover">
+                  <thead>
+                     <tr>
+                        <th>Assistent</th>
+                        <th>Apotheek</th>
+                        <th>Contactpersoon</th>
+                        <th>Uurtarief Assistent</th>
+                        <th>Uurtarief Apotheek</th>
+                        <th>Kilometervergoeding</th>
+                        <th>Afstand in Km</th>
+                        <th>Actief</th>
+                     </tr>
+                  </thead>
+                  <tbody class="table-border-bottom-0">
+                     {% for link in links %}
+                     <tr>
+                        <td align="center">{{ link.assistent.user.first_name }} {{ link.assistent.user.last_name }}</td>
+                        <td align="center">{{ link.apotheek.apotheek_naamBedrijf }}</td>
+                        <td align="center">{{ link.apotheek.user.first_name }} {{ link.apotheek.user.last_name }}</td>
+                        <td align="center">€ {{ link.uurtariefAssistent }}</td>
+                        <td align="center">€ {{ link.uurtariefApotheek }}</td>
+                        {% if link.kilometervergoeding %}
+                        <td align="center"><i class="fas fa-check"></i></td>
+                        {% else %}
+                        <td align="center"><i class="fas fa-times"></i></td>
+                        {% endif %}
+                        <td align="center">{{ link.afstandInKilometers }}</td>
+                        {% if link.actief %}
+                        <td align="center"><i class="fas fa-check"></i></td>
+                        {% else %}
+                        <td align="center"><i class="fas fa-times"></i></td>
+                        {% endif %}
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+<!-- Modal Structure -->
+<div class="modal fade" id="addLinkModal" tabindex="-1" aria-labelledby="addLinkModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="addLinkModalLabel">Add New Link</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <form id="addLinkForm" method="post" action="{% url 'overview_link_assistent_apotheek_admin' user_id %}">
+            <div class="modal-body">
+               {% csrf_token %}
+               <input type="hidden" name="assistent_id" id="modalAssistentId" value="{{ assistent_id }}">
+               <input type="hidden" name="apotheek_id" id="modalApotheekId" value="{{ apotheek_id }}">
+               <!-- Display form errors -->
+               {% if form.errors %}
+               <div class="alert alert-danger">
+                  {% for field in form %}
+                  {% if field.errors %}
+                  <p>{{ field.label }}: {% for error in field.errors %}{{ error }} {% endfor %}</p>
+                  {% endif %}
+                  {% endfor %}
+                  {% for error in form.non_field_errors %}
+                  <p>{{ error }}</p>
+                  {% endfor %}
+               </div>
+               {% endif %}
+               {{ form|crispy }}
+            </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+               <button type="submit" class="btn btn-primary">Opslaan</button>
+            </div>
+         </form>
+      </div>
+   </div>
+</div>
+<!-- / Content -->
+<div class="row">
+   <div class="col-lg-12">
+      {% include 'includes/alerts.html' %}
+   </div>
+</div>
+{% endblock %}

@@ -90,7 +90,7 @@ class Assistent(models.Model):
     assistent_stadBedrijf = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return self.user.email
+        return f"{self.user.first_name} {self.user.last_name}"
 
 
 class Apotheek(models.Model):
@@ -105,4 +105,4 @@ class Apotheek(models.Model):
     apotheek_stadBedrijf = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return self.user.email
+        return self.apotheek_naamBedrijf

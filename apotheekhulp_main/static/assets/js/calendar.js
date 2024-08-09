@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     if (!calendarEl) {
-        console.error('Element with ID "calendar" not found');
         return; // Exit if the element is not found
     }
 

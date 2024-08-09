@@ -6,31 +6,7 @@
    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Profiel Instellingen /</span> Persoonsgegevens</h4>
    <div class="row">
       <div class="col-md-12">
-         <ul class="nav nav-pills flex-column flex-md-row mb-3">
-            <li class="nav-item">
-               <a class="nav-link active" href="{% url 'edit_userprofile_admin' user_id %}">
-               <i class="fas fa-user"></i>&nbsp;&nbsp; Persoonsgegevens
-               </a>
-            </li>
-            {% if gebruiker.role == 1 %}
-            <li class="nav-item">
-               <a class="nav-link" href="{% url 'edit_companyprofile_assistent_admin' assistent_id %}">
-               <i class="fas fa-building"></i>&nbsp;&nbsp; Bedrijfsgegevens
-               </a>
-            </li>
-            {% else %}
-            <li class="nav-item">
-               <a class="nav-link" href="{% url 'edit_companyprofile_apotheek_admin' apotheek_id %}">
-               <i class="fas fa-building"></i>&nbsp;&nbsp; Bedrijfsgegevens
-               </a>
-            </li>
-            {% endif %}
-            <li class="nav-item">
-               <a class="nav-link" href="{% url 'change_password_user' user_id %}">
-               <i class="fas fa-key"></i>&nbsp;&nbsp; Wijzig wachtwoord
-               </a>
-            </li>
-         </ul>
+         {% include 'includes/user_nav.html' %}
          <div class="card mb-4">
             <h5 class="card-header">Persoonsgegevens</h5>
             <!-- Account -->
