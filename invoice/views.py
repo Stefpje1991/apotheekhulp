@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -65,7 +67,8 @@ def overview_link_assistent_apotheek_admin(request, user_id):
 def overview_events_apotheek_and_admin(request):
     user_id = request.user.id
     apotheek = get_object_or_404(Apotheek, user=request.user)
-    te_bekijken_events_door_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted', status_apotheek='noaction')
+    te_bekijken_events_door_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted',
+                                                            status_apotheek='noaction')
     apotheek_id = apotheek.id
     links = LinkBetweenAssistentAndApotheek.objects.filter(apotheek=apotheek)
     context = {
@@ -76,3 +79,29 @@ def overview_events_apotheek_and_admin(request):
         'links': links
     }
     return render(request, 'invoice/overview_events_apotheek_and_admin.html', context)
+
+
+@role_required(2, 3)
+def update_event_status(request, event_id):
+    if request.method == 'POST':
+        # Log the raw request body
+        print('Raw request body:', request.body.decode('utf-8'))
+
+        try:
+            data = json.loads(request.body)  # Parse the JSON data
+            status_apotheek = data.get('status_apotheek')
+
+            # Log the extracted data
+            print('Extracted Status:', status_apotheek)
+
+            # Process the data (e.g., update the event status)
+            event = Event.objects.get(id=event_id)
+            event.status_apotheek = status_apotheek
+            event.save()
+
+            return JsonResponse({'success': True})
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        except Event.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Event not found'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)

@@ -157,6 +157,24 @@ function previewImage(event) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('.accept-btn').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default button behavior
+
+            const eventId = this.getAttribute('data-event-id');
+            updateStatus(eventId, 'Accepted');
+        });
+    });
+
+    document.querySelectorAll('.decline-btn').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default button behavior
+
+            const eventId = this.getAttribute('data-event-id');
+            updateStatus(eventId, 'Declined');
+        });
+    });
+
     const tableRows = document.querySelectorAll("#tbl_assistenten tbody tr");
 
     tableRows.forEach(function (row) {
@@ -276,3 +294,32 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+
+function updateStatus(eventId, newStatus) {
+    console.log('Updating event status...');
+    console.log('Event ID:', eventId);
+    console.log('New Status:', newStatus);
+
+    fetch(`/invoice/update_event_status/${eventId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Ensure the CSRF token is correct
+        },
+        body: JSON.stringify({ status_apotheek: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('Failed to update status: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred: ' + error.message);
+    });
+}

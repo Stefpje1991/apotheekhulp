@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container-xxl flex-grow-1 container-p-y">
-   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Apotheek /</span> Overzicht Prestaties</h4>
+   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Apotheek /</span> Overzicht Openstaande Prestaties</h4>
    <div class="row">
       <div class="col-md-12">
          <div class="card mb-4">
@@ -29,8 +29,12 @@
                         <td align="center">{{ event.end_time|time:"H:i" }}</td>
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
-                        <td align="center"><span class="badge bg-success">Goedkeuren</span></td>
-                        <td align="center"><span class="badge bg-danger">Weigeren</span></td>
+                        <td align="center">
+                           <span class="badge bg-success" style="cursor: pointer;" onclick="updateStatus('{{ event.id }}', 'Accepted')">Goedkeuren</span>
+                        </td>
+                        <td align="center">
+                           <span class="badge bg-danger" style="cursor: pointer;" onclick="updateStatus('{{ event.id }}', 'Declined')">Weigeren</span>
+                        </td>
                      </tr>
                   {% endfor %}
                   </tbody>
