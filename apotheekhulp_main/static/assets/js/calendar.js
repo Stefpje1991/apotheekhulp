@@ -65,8 +65,6 @@ document.addEventListener('DOMContentLoaded', function() {
         dateClick: function(info) {
             if (userRole === "3") {  // Note: userRole will be a string
                 showAddEventModal(info.dateStr);
-            } else {
-                console.log('User role is not authorized to add events');
             }
         }
     });
@@ -182,6 +180,7 @@ function fetchOptionsEdit(url, elementId, selectedValue) {
 }
 
 function showEventDetails(event) {
+    console.log("Show Event")
     function formatTime(date) {
         return new Date(date).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
     }
@@ -205,24 +204,30 @@ function showEventDetails(event) {
 
     const acceptBtn = document.getElementById('acceptBtn');
     const rejectBtn = document.getElementById('rejectBtn');
-    const editBtn = document.getElementById('editBtn');
-    const deleteBtn = document.getElementById('deleteBtn');
+    const editBtnCal = document.getElementById('editBtnCal');
+    const deleteBtnCal = document.getElementById('deleteBtnCal');
 
-    if (event.extendedProps.status === 'noaction' && (event.extendedProps.user_role === 1 || event.extendedProps.user_role === 2)) {
+    if (event.extendedProps.status === 'noaction' && event.extendedProps.user_role === 1) {
         acceptBtn.style.display = 'inline-block';
         rejectBtn.style.display = 'inline-block';
-        deleteBtn.style.display = 'none';
-        editBtn.style.display = 'none';
+        deleteBtnCal.style.display = 'none';
+        editBtnCal.style.display = 'none';
         acceptBtn.onclick = () => handleAction(event.id, 'accept');
         rejectBtn.onclick = () => handleAction(event.id, 'reject');
-    } else {
+    } else if (event.extendedProps.user_role === 3) {
         acceptBtn.style.display = 'none';
         rejectBtn.style.display = 'none';
-        deleteBtn.style.display = 'inline-block';
-        editBtn.style.display = 'inline-block';
-        deleteBtn.onclick = () => handleDelete(event.id);
-        editBtn.onclick = () => handleEdit(event);
+        deleteBtnCal.style.display = 'inline-block';
+        editBtnCal.style.display = 'inline-block';
+        deleteBtnCal.onclick = () => handleDelete(event.id);
+        editBtnCal.onclick = () => handleEdit(event);
     }
+      else {
+        acceptBtn.style.display = 'none';
+        rejectBtn.style.display = 'none';
+        deleteBtnCal.style.display = 'none';
+        editBtnCal.style.display = 'none';
+      }
 
     const modal = new bootstrap.Modal(document.getElementById('eventDetailsModal'));
     modal.show();
@@ -388,3 +393,4 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+

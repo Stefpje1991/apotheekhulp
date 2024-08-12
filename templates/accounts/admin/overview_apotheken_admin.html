@@ -9,17 +9,17 @@
          <ul class="nav nav-pills flex-column flex-md-row mb-3">
             <li class="nav-item">
                <a class="nav-link" href="{% url 'overview_assistenten' %}">
-                  <i class="fas fa-user"></i>&nbsp;&nbsp; Assistenten
+               <i class="fas fa-user"></i>&nbsp;&nbsp; Assistenten
                </a>
             </li>
             <li class="nav-item">
                <a class="nav-link active" href="{% url 'overview_apotheken' %}">
-                  <i class="fas fa-building"></i>&nbsp;&nbsp; Apotheken
+               <i class="fas fa-building"></i>&nbsp;&nbsp; Apotheken
                </a>
             </li>
             <li class="nav-item">
                <a class="nav-link" href="{% url 'add_nieuwe_apotheek_admin' %}">
-                  <i class="fas fa-plus"></i>&nbsp;&nbsp; Nieuwe Apotheek
+               <i class="fas fa-plus"></i>&nbsp;&nbsp; Nieuwe Apotheek
                </a>
             </li>
          </ul>
@@ -39,7 +39,17 @@
                   </thead>
                   <tbody class="table-border-bottom-0">
                      {% for apotheek in apotheken %}
-                     <tr>
+                     <tr data-first-name="{{ apotheek.user.first_name }}"
+                        data-last-name="{{ apotheek.user.last_name }}"
+                        data-email="{{ apotheek.user.email }}"
+                        data-phone-number="{{ apotheek.user.phone_number }}"
+                        data-status="{% if apotheek.user.is_active %}Actief{% else %}Niet Actief{% endif %}"
+                        data-btw-nummer="{{ apotheek.apotheek_btwNummer }}"
+                        data-naam-bedrijf="{{ apotheek.apotheek_naamBedrijf }}"
+                        data-straat-bedrijf="{{ apotheek.apotheek_straatBedrijf }}"
+                        data-huisnummer-bedrijf="{{ apotheek.apotheek_huisnummerBedrijf }}"
+                        data-postcode-bedrijf="{{ apotheek.apotheek_postcodeBedrijf }}"
+                        data-stad-bedrijf="{{ apotheek.apotheek_stadBedrijf }}">
                         <td>{{ apotheek.user.first_name }}</td>
                         <td>{{ apotheek.user.last_name }}</td>
                         <td>{{ apotheek.user.email }}</td>
@@ -50,8 +60,8 @@
                         <td><span class="badge text-bg-danger">Niet Actief</span></td>
                         {% endif %}
                         <td>
-                           <a href="{% url 'edit_userprofile_admin' apotheek.user.id %}" aria-label="Edit">
-                              <i class="fas fa-edit"></i>
+                           <a href="{% url 'edit_userprofile_admin' apotheek.user.id %}" aria-label="Edit" class="edit-btn">
+                           <i class="fas fa-edit"></i>
                            </a>
                         </td>
                      </tr>
@@ -68,6 +78,34 @@
 <div class="row">
    <div class="col-lg-12">
       {% include 'includes/alerts.html' %}
+   </div>
+</div>
+<!-- Modal Structure -->
+<div class="modal fade" id="addLinkModalApotheek" tabindex="-1" aria-labelledby="rowClickModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="rowClickModalLabel">Apotheek Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <p><strong>Voornaam:</strong> <span id="modalFirstNameApotheek"></span></p>
+            <p><strong>Achternaam:</strong> <span id="modalLastNameApotheek"></span></p>
+            <p><strong>Email:</strong> <span id="modalEmailApotheek"></span></p>
+            <p><strong>Telefoonnummer:</strong> <span id="modalPhoneNumberApotheek"></span></p>
+            <p><strong>Status:</strong> <span id="modalStatusApotheek"></span></p>
+            <hr />
+            <p><strong>BTW Nummer:</strong> <span id="modalBtwNummerApotheek"></span></p>
+            <p><strong>Naam:</strong> <span id="modalNaamBedrijfApotheek"></span></p>
+            <p><strong>Straat:</strong> <span id="modalStraatBedrijfApotheek"></span></p>
+            <p><strong>Huisnummer:</strong> <span id="modalHuisnummerBedrijfApotheek"></span></p>
+            <p><strong>Postcode:</strong> <span id="modalPostcodeBedrijfApotheek"></span></p>
+            <p><strong>Stad:</strong> <span id="modalStadBedrijfApotheek"></span></p>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+         </div>
+      </div>
    </div>
 </div>
 {% endblock %}

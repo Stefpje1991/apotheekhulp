@@ -9,17 +9,17 @@
          <ul class="nav nav-pills flex-column flex-md-row mb-3">
             <li class="nav-item">
                <a class="nav-link active" href="{% url 'overview_assistenten' %}">
-                  <i class="fas fa-user"></i>&nbsp;&nbsp; Assistenten
+               <i class="fas fa-user"></i>&nbsp;&nbsp; Assistenten
                </a>
             </li>
             <li class="nav-item">
                <a class="nav-link" href="{% url 'overview_apotheken' %}">
-                  <i class="fas fa-building"></i>&nbsp;&nbsp; Apotheken
+               <i class="fas fa-building"></i>&nbsp;&nbsp; Apotheken
                </a>
             </li>
             <li class="nav-item">
                <a class="nav-link" href="{% url 'add_nieuwe_assistent_admin' %}">
-                  <i class="fas fa-plus"></i>&nbsp;&nbsp; Nieuwe Assistent
+               <i class="fas fa-plus"></i>&nbsp;&nbsp; Nieuwe Assistent
                </a>
             </li>
          </ul>
@@ -38,36 +38,36 @@
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
-   {% for assistent in assistenten %}
-   <tr data-first-name="{{ assistent.user.first_name }}"
-       data-last-name="{{ assistent.user.last_name }}"
-       data-email="{{ assistent.user.email }}"
-       data-phone-number="{{ assistent.user.phone_number }}"
-       data-status="{% if assistent.user.is_active %}Actief{% else %}Niet Actief{% endif %}"
-       data-btw-nummer="{{ assistent.assistent_btwNummer }}"
-       data-btw-plichtig="{{ assistent.assistent_btwPlichtig|yesno:'Ja, Nee' }}"
-       data-naam-bedrijf="{{ assistent.assistent_naamBedrijf }}"
-       data-straat-bedrijf="{{ assistent.assistent_straatBedrijf }}"
-       data-huisnummer-bedrijf="{{ assistent.assistent_huisnummerBedrijf }}"
-       data-postcode-bedrijf="{{ assistent.assistent_postcodeBedrijf }}"
-       data-stad-bedrijf="{{ assistent.assistent_stadBedrijf }}">
-       <td>{{ assistent.user.first_name }}</td>
-       <td>{{ assistent.user.last_name }}</td>
-       <td>{{ assistent.user.email }}</td>
-       <td>{{ assistent.user.phone_number }}</td>
-       {% if assistent.user.is_active %}
-       <td><span class="badge text-bg-success">Actief</span></td>
-       {% else %}
-       <td><span class="badge text-bg-danger">Niet Actief</span></td>
-       {% endif %}
-       <td>
-           <a href="{% url 'edit_userprofile_admin' assistent.user.id %}" aria-label="Edit" class="edit-btn">
-               <i class="fas fa-edit"></i>
-           </a>
-       </td>
-   </tr>
-   {% endfor %}
-</tbody>
+                     {% for assistent in assistenten %}
+                     <tr data-first-name="{{ assistent.user.first_name }}"
+                        data-last-name="{{ assistent.user.last_name }}"
+                        data-email="{{ assistent.user.email }}"
+                        data-phone-number="{{ assistent.user.phone_number }}"
+                        data-status="{% if assistent.user.is_active %}Actief{% else %}Niet Actief{% endif %}"
+                        data-btw-nummer="{{ assistent.assistent_btwNummer }}"
+                        data-btw-plichtig="{{ assistent.assistent_btwPlichtig|yesno:'Ja, Nee' }}"
+                        data-naam-bedrijf="{{ assistent.assistent_naamBedrijf }}"
+                        data-straat-bedrijf="{{ assistent.assistent_straatBedrijf }}"
+                        data-huisnummer-bedrijf="{{ assistent.assistent_huisnummerBedrijf }}"
+                        data-postcode-bedrijf="{{ assistent.assistent_postcodeBedrijf }}"
+                        data-stad-bedrijf="{{ assistent.assistent_stadBedrijf }}">
+                        <td>{{ assistent.user.first_name }}</td>
+                        <td>{{ assistent.user.last_name }}</td>
+                        <td>{{ assistent.user.email }}</td>
+                        <td>{{ assistent.user.phone_number }}</td>
+                        {% if assistent.user.is_active %}
+                        <td><span class="badge text-bg-success">Actief</span></td>
+                        {% else %}
+                        <td><span class="badge text-bg-danger">Niet Actief</span></td>
+                        {% endif %}
+                        <td>
+                           <a href="{% url 'edit_userprofile_admin' assistent.user.id %}" aria-label="Edit" class="edit-btn">
+                           <i class="fas fa-edit"></i>
+                           </a>
+                        </td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
                </table>
             </div>
             <!-- /Account -->
@@ -81,34 +81,33 @@
       {% include 'includes/alerts.html' %}
    </div>
 </div>
-
 <!-- Modal Structure -->
 <div class="modal fade" id="addLinkModal" tabindex="-1" aria-labelledby="rowClickModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="rowClickModalLabel">Assistent Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p><strong>Voornaam:</strong> <span id="modalFirstName"></span></p>
-                <p><strong>Achternaam:</strong> <span id="modalLastName"></span></p>
-                <p><strong>Email:</strong> <span id="modalEmail"></span></p>
-                <p><strong>Telefoonnummer:</strong> <span id="modalPhoneNumber"></span></p>
-                <p><strong>Status:</strong> <span id="modalStatus"></span></p>
-                <hr />
-                <p><strong>BTW Nummer:</strong> <span id="modalBtwNummer"></span></p>
-                <p><strong>BTW Plichtig:</strong> <span id="modalBtwPlichtig"></span></p>
-                <p><strong>Naam:</strong> <span id="modalNaamBedrijf"></span></p>
-                <p><strong>Straat:</strong> <span id="modalStraatBedrijf"></span></p>
-                <p><strong>Huisnummer:</strong> <span id="modalHuisnummerBedrijf"></span></p>
-                <p><strong>Postcode:</strong> <span id="modalPostcodeBedrijf"></span></p>
-                <p><strong>Stad:</strong> <span id="modalStadBedrijf"></span></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="rowClickModalLabel">Assistent Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <p><strong>Voornaam:</strong> <span id="modalFirstName"></span></p>
+            <p><strong>Achternaam:</strong> <span id="modalLastName"></span></p>
+            <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+            <p><strong>Telefoonnummer:</strong> <span id="modalPhoneNumber"></span></p>
+            <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+            <hr />
+            <p><strong>BTW Nummer:</strong> <span id="modalBtwNummer"></span></p>
+            <p><strong>BTW Plichtig:</strong> <span id="modalBtwPlichtig"></span></p>
+            <p><strong>Naam:</strong> <span id="modalNaamBedrijf"></span></p>
+            <p><strong>Straat:</strong> <span id="modalStraatBedrijf"></span></p>
+            <p><strong>Huisnummer:</strong> <span id="modalHuisnummerBedrijf"></span></p>
+            <p><strong>Postcode:</strong> <span id="modalPostcodeBedrijf"></span></p>
+            <p><strong>Stad:</strong> <span id="modalStadBedrijf"></span></p>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+         </div>
+      </div>
+   </div>
 </div>
 {% endblock %}

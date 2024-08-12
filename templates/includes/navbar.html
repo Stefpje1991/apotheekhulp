@@ -16,26 +16,14 @@
          <div data-i18n="Analytics">Kalender</div>
       </a>
    </li>
-   <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-         <i class="fas fa-id-card me-2"></i>
-         <div data-i18n="Account Settings">Profiel Instellingen</div>
+   {% if user.role == 2 %}
+   <li class="menu-item {% active request 'overview_events_apotheek_and_admin' %}">
+      <a href="{% url 'overview_events_apotheek_and_admin' %}" class="menu-link">
+         <i class="fas fa-briefcase me-2"></i>
+         <div data-i18n="Analytics">Prestaties</div>
       </a>
-      <ul class="menu-sub">
-         <li class="menu-item">
-            <a href="{% url 'edit_userprofile' %}" class="menu-link">
-               <div data-i18n="Account">Persoonsgegevens</div>
-            </a>
-         </li>
-         {% if user.role == 1 or user.role == 2 %}
-         <li class="menu-item">
-            <a href="{% url 'edit_companyprofile' %}" class="menu-link">
-               <div data-i18n="Notifications">Bedrijfsgegevens</div>
-            </a>
-         </li>
-         {% endif %}
-      </ul>
    </li>
+   {% endif %}
    {% if user.role == 3 %}
    <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">

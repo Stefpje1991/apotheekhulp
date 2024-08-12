@@ -33,6 +33,9 @@ def events_json(request):
             events = Event.objects.filter(assistent=assistent)
         elif user.role == User.ADMIN:
             pass
+        elif user.role == User.APOTHEEK:
+            apotheek = Apotheek.objects.get(user=user)
+            events = Event.objects.filter(apotheek=apotheek)
         else:
             return JsonResponse({'error': 'Unauthorized'}, status=403)
 
@@ -51,9 +54,8 @@ def events_json(request):
                 'status': event.status,
                 'created_date': localtime(event.created_date).isoformat() if event.created_date else None,
                 'modified_date': localtime(event.modified_date).isoformat() if event.modified_date else None,
-                'status_last_changed_date': localtime(
-                    event.status_last_changed_date).isoformat() if event.status_last_changed_date else None,
-                'user_role': request.user.role
+                'user_role': request.user.role,
+                'status_apotheek': event.status_apotheek,
             }
             for event in events
         ]
@@ -195,6 +197,8 @@ def edit_event(request, event_id):
 
                 if apotheek_id:
                     event.apotheek = Apotheek.objects.get(id=apotheek_id)
+
+                event.status = "noaction"
 
                 event.save()
                 return JsonResponse({'status': 'success'})

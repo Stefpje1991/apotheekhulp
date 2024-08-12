@@ -17,6 +17,13 @@ class Event(models.Model):
         ('noaction', 'Geen actie'),
         ('declined', 'Afgekeurd')
     ]
+
+    STATUS_CHOICES_APOTHEEK = [
+        ('accepted', 'Goedgekeurd'),
+        ('noaction', 'Geen actie'),
+        ('declined', 'Afgekeurd')
+    ]
+
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     pauzeduur = models.SmallIntegerField(default=0, blank=True, null=True)
@@ -29,7 +36,7 @@ class Event(models.Model):
     created_date = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     modified_date = models.DateTimeField(auto_now=True, blank=True, null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='noaction')
-    status_last_changed_date = models.DateTimeField(null=True, blank=True)
+    status_apotheek = models.CharField(max_length=50, choices=STATUS_CHOICES_APOTHEEK, default='noaction')
 
     def __str__(self):
         return str(self.assistent) + "_" + str(self.apotheek) + "_" + str(self.start_time) + "_" + str(self.end_time)

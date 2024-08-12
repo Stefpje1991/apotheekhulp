@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404
 
 from accounts.decorators import role_required
 from accounts.models import Assistent, User, Apotheek
+from calendar_app.models import Event
 from invoice.forms import LinkBetweenAssistentAndApotheekForm
 from invoice.models import LinkBetweenAssistentAndApotheek
 
@@ -57,3 +58,21 @@ def overview_link_assistent_apotheek_admin(request, user_id):
     }
 
     return render(request, 'invoice/admin/overview_link_assistent_apotheek_admin.html', context)
+
+
+@role_required(2)
+@login_required(login_url='login')
+def overview_events_apotheek_and_admin(request):
+    user_id = request.user.id
+    apotheek = get_object_or_404(Apotheek, user=request.user)
+    te_bekijken_events_door_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted', status_apotheek='noaction')
+    apotheek_id = apotheek.id
+    links = LinkBetweenAssistentAndApotheek.objects.filter(apotheek=apotheek)
+    context = {
+        'user_id': user_id,
+        'events_to_be_reviewed_by_apotheek': te_bekijken_events_door_apotheek,
+        'apotheek': apotheek,
+        'apotheek_id': apotheek_id,
+        'links': links
+    }
+    return render(request, 'invoice/overview_events_apotheek_and_admin.html', context)

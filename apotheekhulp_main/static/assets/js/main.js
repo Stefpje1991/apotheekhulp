@@ -156,20 +156,6 @@ function previewImage(event) {
   }
 }
 
-$(document).ready(function() {
-  if ($('#calendar').length) { // Check if calendar element exists
-    $('#calendar').fullCalendar({
-      header: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'month,agendaWeek,agendaDay'
-      },
-      defaultDate: '2024-08-01',
-      editable: true,
-    });
-  }
-});
-
 document.addEventListener("DOMContentLoaded", function () {
     const tableRows = document.querySelectorAll("#tbl_assistenten tbody tr");
 
@@ -213,8 +199,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
         // Get the assistent and apotheek names from hidden inputs
-    const assistentName = document.getElementById("assistentName").value;
-    const apotheekName = document.getElementById("apotheekName").value;
+    const assistentNameElement = document.getElementById("assistentName");
+    const apotheekNameElement = document.getElementById("apotheekName");
+
+    const assistentName = assistentNameElement ? assistentNameElement.value : null;
+    const apotheekName = apotheekNameElement ? apotheekNameElement.value : null;
+
 
     var addLinkModal = document.getElementById('addLinkModal');
     if (addLinkModal) { // Ensure the modal exists on the page
@@ -238,6 +228,50 @@ document.addEventListener("DOMContentLoaded", function () {
                         break;
                     }
                 }
+            }
+        });
+    }
+
+    const table = document.getElementById("tbl_apotheken");
+    const addLinkModalApotheek = document.getElementById('addLinkModalApotheek');
+
+
+    if (table && addLinkModalApotheek) {
+        table.addEventListener('click', function (event) {
+            const target = event.target.closest('tr'); // Get the closest <tr> element
+            if (target && target.hasAttribute('data-first-name')) {
+                // Extract data attributes from the <tr>
+                if (event.target.closest('.edit-btn')) {
+                return;
+                }
+                const apotheekFirstName = target.getAttribute('data-first-name');
+                const apotheekLastName = target.getAttribute('data-last-name');
+                const apotheekEmail = target.getAttribute('data-email');
+                const apotheekPhoneNumber = target.getAttribute('data-phone-number');
+                const apotheekStatus = target.getAttribute('data-status');
+                const apotheekBtwNummer = target.getAttribute('data-btw-nummer');
+                const apotheekNaamBedrijf = target.getAttribute('data-naam-bedrijf');
+                const apotheekStraatBedrijf = target.getAttribute('data-straat-bedrijf');
+                const apotheekHuisnummerBedrijf = target.getAttribute('data-huisnummer-bedrijf');
+                const apotheekPostcodeBedrijf = target.getAttribute('data-postcode-bedrijf');
+                const apotheekStadBedrijf = target.getAttribute('data-stad-bedrijf');
+
+                // Populate the modal with extracted data
+                document.getElementById("modalFirstNameApotheek").textContent = apotheekFirstName;
+                document.getElementById("modalLastNameApotheek").textContent = apotheekLastName;
+                document.getElementById("modalEmailApotheek").textContent = apotheekEmail;
+                document.getElementById("modalPhoneNumberApotheek").textContent = apotheekPhoneNumber;
+                document.getElementById("modalStatusApotheek").textContent = apotheekStatus;
+                document.getElementById("modalBtwNummerApotheek").textContent = apotheekBtwNummer;
+                document.getElementById("modalNaamBedrijfApotheek").textContent = apotheekNaamBedrijf;
+                document.getElementById("modalStraatBedrijfApotheek").textContent = apotheekStraatBedrijf;
+                document.getElementById("modalHuisnummerBedrijfApotheek").textContent = apotheekHuisnummerBedrijf;
+                document.getElementById("modalPostcodeBedrijfApotheek").textContent = apotheekPostcodeBedrijf;
+                document.getElementById("modalStadBedrijfApotheek").textContent = apotheekStadBedrijf;
+
+                // Show the modal
+                var modal = new bootstrap.Modal(addLinkModalApotheek);
+                modal.show();
             }
         });
     }
