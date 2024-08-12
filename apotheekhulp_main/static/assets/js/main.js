@@ -173,93 +173,12 @@ $(document).ready(function() {
 document.addEventListener("DOMContentLoaded", function () {
     const tableRows = document.querySelectorAll("#tbl_assistenten tbody tr");
 
-    const addLinkForm = document.getElementById('addLinkForm');
-    const addLinkModal = new bootstrap.Modal(document.getElementById('addLinkModal'));
-    var assistentId = document.getElementById('modalAssistentId').value;
-    var apotheekId = document.getElementById('modalApotheekId').value;
-
-    // Fetching data from data-* attributes
-    const assistentName = document.getElementById('assistentData').dataset.assistentName;
-    const apotheekName = document.getElementById('apotheekData').dataset.apotheekName;
-
-    // Set Assistent data if available
-    if (assistentName) {
-        // Preselect the dropdown option by text content
-        const assistentDropdown = document.querySelector('[name="assistent"]');
-        for (let option of assistentDropdown.options) {
-            if (option.textContent.trim() === assistentName.trim()) {
-                option.selected = true;
-                break;
-            }
-        }
-    }
-    // Set Apotheek data if available
-    if (apotheekName) {
-        // Preselect the dropdown option by text content
-        const apotheekDropdown = document.querySelector('[name="apotheek"]');
-        for (let option of apotheekDropdown.options) {
-            if (option.textContent.trim() === apotheekName.trim()) {
-                option.selected = true;
-                break;
-            }
-        }
-    }
-
-    addLinkForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-
-        const formData = new FormData(addLinkForm);
-
-        fetch(addLinkForm.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                addLinkForm.reset();
-                addLinkModal.hide();
-                location.reload();
-            } else {
-                displayErrors(data.errors);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    });
-
-    function displayErrors(errors) {
-        const alertContainer = document.querySelector('#addLinkModal .alert');
-        if (alertContainer) {
-            alertContainer.innerHTML = '';
-        }
-
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger';
-        for (const field in errors) {
-            if (errors.hasOwnProperty(field)) {
-                const errorMessages = errors[field];
-                errorMessages.forEach(msg => {
-                    const p = document.createElement('p');
-                    p.textContent = `${msg}`;
-                    alertDiv.appendChild(p);
-                });
-            }
-        }
-        const modalBody = document.querySelector('#addLinkModal .modal-body');
-        modalBody.insertBefore(alertDiv, modalBody.firstChild);
-    }
-
     tableRows.forEach(function (row) {
-        row.addEventListener("click", function (event) {
+        row.addEventListener("click", function () {
             if (event.target.closest('.edit-btn')) {
                 return;
             }
-
+            // Fetch data from the clicked row
             const firstName = row.getAttribute("data-first-name");
             const lastName = row.getAttribute("data-last-name");
             const email = row.getAttribute("data-email");
@@ -273,21 +192,53 @@ document.addEventListener("DOMContentLoaded", function () {
             const postcodeBedrijf = row.getAttribute("data-postcode-bedrijf");
             const stadBedrijf = row.getAttribute("data-stad-bedrijf");
 
-            document.getElementById("modalFirstName").textContent = firstName;
-            document.getElementById("modalLastName").textContent = lastName;
-            document.getElementById("modalEmail").textContent = email;
-            document.getElementById("modalPhoneNumber").textContent = phoneNumber;
-            document.getElementById("modalStatus").textContent = status;
+            // Set the modal content with the fetched data
+            document.getElementById("modalFirstName").textContent = firstName || "N/A";
+            document.getElementById("modalLastName").textContent = lastName || "N/A";
+            document.getElementById("modalEmail").textContent = email || "N/A";
+            document.getElementById("modalPhoneNumber").textContent = phoneNumber || "N/A";
+            document.getElementById("modalStatus").textContent = status || "N/A";
             document.getElementById("modalBtwNummer").textContent = btwNummer || "N/A";
-            document.getElementById("modalBtwPlichtig").textContent = btwPlichtig;
+            document.getElementById("modalBtwPlichtig").textContent = btwPlichtig || "N/A";
             document.getElementById("modalNaamBedrijf").textContent = naamBedrijf || "N/A";
             document.getElementById("modalStraatBedrijf").textContent = straatBedrijf || "N/A";
             document.getElementById("modalHuisnummerBedrijf").textContent = huisnummerBedrijf || "N/A";
             document.getElementById("modalPostcodeBedrijf").textContent = postcodeBedrijf || "N/A";
             document.getElementById("modalStadBedrijf").textContent = stadBedrijf || "N/A";
 
-            var myModal = new bootstrap.Modal(document.getElementById('rowClickModal'));
+            // Show the modal
+            var myModal = new bootstrap.Modal(document.getElementById('addLinkModal'));
             myModal.show();
         });
     });
+
+        // Get the assistent and apotheek names from hidden inputs
+    const assistentName = document.getElementById("assistentName").value;
+    const apotheekName = document.getElementById("apotheekName").value;
+
+    var addLinkModal = document.getElementById('addLinkModal');
+    if (addLinkModal) { // Ensure the modal exists on the page
+        addLinkModal.addEventListener('show.bs.modal', function (event) {
+            if (assistentName) {
+                console.log("Assistent Name:", assistentName);
+                const assistentDropdown = document.getElementById("id_assistent");
+                for (let option of assistentDropdown.options) {
+                    if (option.text.trim() === assistentName.trim()) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+            }
+
+            if (apotheekName) {
+                const apotheekDropdown = document.getElementById("id_apotheek");
+                for (let option of apotheekDropdown.options) {
+                    if (option.text.trim() === apotheekName.trim()) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+            }
+        });
+    }
 });

@@ -65,6 +65,7 @@
    </div>
 </div>
 <!-- Modal Structure -->
+<!-- Modal Structure -->
 <div class="modal fade" id="addLinkModal" tabindex="-1" aria-labelledby="addLinkModalLabel" aria-hidden="true">
    <div class="modal-dialog">
       <div class="modal-content">
@@ -77,21 +78,11 @@
                {% csrf_token %}
                <input type="hidden" name="assistent_id" id="modalAssistentId" value="{{ assistent_id }}">
                <input type="hidden" name="apotheek_id" id="modalApotheekId" value="{{ apotheek_id }}">
-               <div id="assistentData" data-assistent-name="{{ assistent.user.first_name }} {{ assistent.user.last_name }}"></div>
-               <div id="apotheekData" data-apotheek-name="{{ apotheek.apotheek_naamBedrijf }}"></div>
-               <!-- Display form errors -->
-               {% if form.errors %}
-               <div class="alert alert-danger">
-                  {% for field in form %}
-                  {% if field.errors %}
-                  <p>{{ field.label }}: {% for error in field.errors %}{{ error }} {% endfor %}</p>
-                  {% endif %}
-                  {% endfor %}
-                  {% for error in form.non_field_errors %}
-                  <p>{{ error }}</p>
-                  {% endfor %}
-               </div>
-               {% endif %}
+               <input type="hidden" id="assistentName" value="{{ assistent.user.first_name }} {{ assistent.user.last_name }}">
+               <input type="hidden" id="apotheekName" value="{{ apotheek.apotheek_naamBedrijf }}">
+
+               <!-- You might need fields here corresponding to the assistent and apotheek -->
+
                {{ form|crispy }}
             </div>
             <div class="modal-footer">
@@ -102,6 +93,7 @@
       </div>
    </div>
 </div>
+
 <!-- / Content -->
 <div class="row">
    <div class="col-lg-12">
