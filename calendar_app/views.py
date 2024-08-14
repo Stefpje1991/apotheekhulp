@@ -199,6 +199,8 @@ def edit_event(request, event_id):
                     event.apotheek = Apotheek.objects.get(id=apotheek_id)
 
                 event.status = "noaction"
+                event.status_apotheek = 'noaction'
+                event.status_apotheek_changed_by = None
 
                 event.save()
                 return JsonResponse({'status': 'success'})

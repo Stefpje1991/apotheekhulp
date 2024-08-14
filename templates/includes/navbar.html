@@ -16,9 +16,17 @@
          <div data-i18n="Analytics">Kalender</div>
       </a>
    </li>
+   {% if user.role == 1 %}
+   <li class="menu-item {% active request 'overview_events_assistent' %}">
+      <a href="{% url 'overview_events_assistent' %}" class="menu-link">
+         <i class="fas fa-briefcase me-2"></i>
+         <div data-i18n="Analytics">Prestaties</div>
+      </a>
+   </li>
+   {% endif %}
    {% if user.role == 2 %}
-   <li class="menu-item {% active request 'overview_events_apotheek_and_admin' %}">
-      <a href="{% url 'overview_events_apotheek_and_admin' %}" class="menu-link">
+   <li class="menu-item {% active request 'overview_events_apotheek' %}">
+      <a href="{% url 'overview_events_apotheek' %}" class="menu-link">
          <i class="fas fa-briefcase me-2"></i>
          <div data-i18n="Analytics">Prestaties</div>
       </a>
@@ -42,6 +50,12 @@
             </a>
          </li>
       </ul>
+   </li>
+   <li class="menu-item {% active request 'overview_all_events_admin' %}">
+      <a href="{% url 'overview_all_events_admin' %}" class="menu-link">
+         <i class="fas fa-briefcase me-2"></i>
+         <div data-i18n="Analytics">Prestaties</div>
+      </a>
    </li>
    {% endif %}
    <li class="menu-item">

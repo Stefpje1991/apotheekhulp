@@ -295,6 +295,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+function closeModal() {
+      // Reload the page to reset the form and hide the modal
+      window.location.href = window.location.href.split('?')[0];
+   }
 
 function updateStatus(eventId, newStatus) {
     console.log('Updating event status...');
@@ -323,3 +327,33 @@ function updateStatus(eventId, newStatus) {
         alert('An error occurred: ' + error.message);
     });
 }
+
+
+function updateStatusAssistent(eventId, newStatus) {
+    console.log('Updating event status...');
+    console.log('Event ID:', eventId);
+    console.log('New Status:', newStatus);
+
+    fetch(`/invoice/update_event_status_assistent/${eventId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Ensure the CSRF token is correct
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('Failed to update status: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred: ' + error.message);
+    });
+}
+

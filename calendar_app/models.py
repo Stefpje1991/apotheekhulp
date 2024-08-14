@@ -37,6 +37,10 @@ class Event(models.Model):
     modified_date = models.DateTimeField(auto_now=True, blank=True, null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='noaction')
     status_apotheek = models.CharField(max_length=50, choices=STATUS_CHOICES_APOTHEEK, default='noaction')
+    status_apotheek_changed_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='status_user_changed', null=True, blank=True)
+    invoiced = models.BooleanField(default=False)
+    invoiced_to_apotheek = models.BooleanField(default=False)
+    paid_by_apotheek = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.assistent) + "_" + str(self.apotheek) + "_" + str(self.start_time) + "_" + str(self.end_time)

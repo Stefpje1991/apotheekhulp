@@ -55,6 +55,15 @@
                         {% else %}
                         <td align="center"><i class="fas fa-times"></i></td>
                         {% endif %}
+                       <!-- Delete Button -->
+                       <td align="center">
+                           <form method="post" action="{% url 'delete_link' user_id=user_id link_id=link.id %}" onsubmit="return confirm('Weet je zeker dat je deze link wilt verwijderen?');">
+                               {% csrf_token %}
+                               <button type="submit" class="btn btn-danger btn-sm">
+                                   <i class="fas fa-trash-alt"></i>
+                               </button>
+                           </form>
+                       </td>
                      </tr>
                      {% endfor %}
                   </tbody>
@@ -64,14 +73,14 @@
       </div>
    </div>
 </div>
+
 <!-- Modal Structure -->
-<!-- Modal Structure -->
-<div class="modal fade" id="addLinkModal" tabindex="-1" aria-labelledby="addLinkModalLabel" aria-hidden="true">
+<div class="modal fade {% if form.errors %}show{% endif %}" id="addLinkModal" tabindex="-1" aria-labelledby="addLinkModalLabel" aria-hidden="true" {% if form.errors %}style="display: block;"{% endif %}>
    <div class="modal-dialog">
       <div class="modal-content">
          <div class="modal-header">
             <h5 class="modal-title" id="addLinkModalLabel">Voeg nieuwe link toe</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeModal()"></button>
          </div>
          <form id="addLinkForm" method="post" action="{% url 'overview_link_assistent_apotheek_admin' user_id %}">
             <div class="modal-body">
@@ -81,12 +90,11 @@
                <input type="hidden" id="assistentName" value="{{ assistent.user.first_name }} {{ assistent.user.last_name }}">
                <input type="hidden" id="apotheekName" value="{{ apotheek.apotheek_naamBedrijf }}">
 
-               <!-- You might need fields here corresponding to the assistent and apotheek -->
-
+               <!-- Crispy form to handle field errors -->
                {{ form|crispy }}
             </div>
             <div class="modal-footer">
-               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeModal()">Sluiten</button>
                <button type="submit" class="btn btn-primary">Opslaan</button>
             </div>
          </form>
@@ -94,7 +102,6 @@
    </div>
 </div>
 
-<!-- / Content -->
 <div class="row">
    <div class="col-lg-12">
       {% include 'includes/alerts.html' %}

@@ -31,6 +31,12 @@
         </a>
     </li>
     <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'overview_events_admin' %}active{% endif %}"
+           href="{% url 'overview_events_admin' user_id %}">
+            <i class="fas fa-briefcase"></i></i>&nbsp;&nbsp; Prestaties
+        </a>
+    </li>
+    <li class="nav-item">
         <a class="nav-link {% if request.resolver_match.url_name == 'change_password_user' %}active{% endif %}"
            href="{% url 'change_password_user' user_id %}">
             <i class="fas fa-key"></i>&nbsp;&nbsp; Wijzig wachtwoord
