@@ -248,11 +248,16 @@ def overview_all_events_admin(request):
     geweigerde_events_door_apotheken = Event.objects.filter(status='Accepted', status_apotheek='Declined').order_by(
         'start_time')
     nog_te_factureren_door_assistent = Event.objects.filter(status='Accepted', status_apotheek='Accepted',
-                                                            invoiced=False).order_by(
-        'start_time')
-    nog_te_factureren_aan_apotheek = Event.objects.filter(status='Accepted', status_apotheek='Accepted',
-                                                            invoiced=True, invoiced_to_apotheek=False).order_by(
-        'start_time')
+                                                            invoiced=False).order_by('start_time')
+    nog_te_factureren_aan_apotheek = (Event.objects.filter(status='Accepted', status_apotheek='Accepted',
+                                                            invoiced=True, invoiced_to_apotheek=False)
+                                      .order_by('start_time'))
+    nog_te_betalen_door_apotheek = Event.objects.filter(status='Accepted', status_apotheek='Accepted',
+                                                            invoiced=True, invoiced_to_apotheek=True,
+                                                        paid_by_apotheek=False).order_by('start_time')
+    betaalde_events_door_apotheek = Event.objects.filter(status='Accepted', status_apotheek='Accepted',
+                                                        invoiced=True, invoiced_to_apotheek=True,
+                                                        paid_by_apotheek=True).order_by('start_time')
 
     paginator_goed_te_keuren_events_door_assistent = Paginator(goed_te_keuren_events_door_assistent, 5)
     page_number_goed_te_keuren_door_assistent = request.GET.get('page_goed_te_keuren_door_assistent')
@@ -284,12 +289,24 @@ def overview_all_events_admin(request):
     paginator_nog_te_factureren_aan_apotheek_obj = paginator_nog_te_factureren_aan_apotheek.get_page(
         page_number_nog_te_factureren_aan_apotheek)
 
+    paginator_nog_te_betalen_door_apotheek = Paginator(nog_te_betalen_door_apotheek, 5)
+    page_number_nog_te_betalen_door_apotheek = request.GET.get('page_nog_te_betalen_door_apotheek')
+    paginator_nog_te_betalen_door_apotheek_obj = paginator_nog_te_betalen_door_apotheek.get_page(
+        page_number_nog_te_betalen_door_apotheek)
+
+    paginator_betaalde_events_door_apotheek = Paginator(betaalde_events_door_apotheek, 5)
+    page_number_betaalde_events_door_apotheek = request.GET.get('page_betaalde_events_door_apotheek')
+    paginator_betaalde_events_door_apotheek_obj = paginator_betaalde_events_door_apotheek.get_page(
+        page_number_betaalde_events_door_apotheek)
+
     context = {
         'paginator_goed_te_keuren_events_door_assistent_obj': paginator_goed_te_keuren_events_door_assistent_obj,
         'paginator_geweigerde_events_door_assistenten_obj': paginator_geweigerde_events_door_assistenten_obj,
         'paginator_goed_te_keuren_events_door_apotheek_obj': paginator_goed_te_keuren_events_door_apotheek_obj,
         'paginator_geweigerde_events_door_apotheken_obj': paginator_geweigerde_events_door_apotheken_obj,
         'paginator_nog_te_factureren_door_assistent_obj': paginator_nog_te_factureren_door_assistent_obj,
-        'paginator_nog_te_factureren_aan_apotheek_obj': paginator_nog_te_factureren_aan_apotheek_obj
+        'paginator_nog_te_factureren_aan_apotheek_obj': paginator_nog_te_factureren_aan_apotheek_obj,
+        'paginator_nog_te_betalen_door_apotheek_obj': paginator_nog_te_betalen_door_apotheek_obj,
+        'paginator_betaalde_events_door_apotheek_obj': paginator_betaalde_events_door_apotheek_obj
     }
     return render(request, 'invoice/admin/overview_all_events.html', context=context)

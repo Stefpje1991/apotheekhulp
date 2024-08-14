@@ -401,6 +401,136 @@
             </div>
             <!-- /Account -->
          </div>
+         <div class="card mb-4">
+            <h5 class="card-header">Nog te betalen events door apotheek</h5>
+            <!-- Account -->
+            <div class="card-body">
+               {% if paginator_nog_te_betalen_door_apotheek_obj %}
+               <table id="tbl_nog_te_betalen_door_apotheek_obj" class="table table-hover">
+                  <thead>
+                     <tr>
+                        <th class="text-center">Datum</th>
+                        <th class="text-center">Startuur</th>
+                        <th class="text-center">Einduur</th>
+                        <th class="text-center">Pauzeduur in minuten</th>
+                        <th class="text-center">Naam Assistent</th>
+                        <th class="text-center">Naam Apotheek</th>
+                        <th class="text-center">Bedrag</th>
+                     </tr>
+                  </thead>
+                  <tbody class="table-border-bottom-0">
+                     {% for event in paginator_nog_te_betalen_door_apotheek_obj %}
+                     <tr>
+                        <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
+                        <td align="center">{{ event.start_time|time:"H:i" }}</td>
+                        <td align="center">{{ event.end_time|time:"H:i" }}</td>
+                        <td align="center">{{ event.pauzeduur }}</td>
+                        <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
+                        <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                        <td align="center">€ 115</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+               {% else %}
+               <p align="center">Geen nog te betalen events gevonden</p>
+               {% endif %}
+               <!-- Pagination Controls -->
+               <nav aria-label="Page navigation" class="mt-4">
+                  <div class="d-flex justify-content-center">
+                     <ul class="pagination">
+                        {% if paginator_nog_te_betalen_door_apotheek_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page_nog_te_betalen_door_apotheek=1">First</a></li>
+                        <li class="page-item"><a class="page-link" href="?page_nog_te_betalen_door_apotheek={{ paginator_nog_te_betalen_door_apotheek_obj.previous_page_number }}">Previous</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">First</span></li>
+                        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                        {% endif %}
+                        {% for num in paginator_nog_te_betalen_door_apotheek_obj.paginator.page_range %}
+                        {% if paginator_nog_te_betalen_door_apotheek_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > paginator_nog_te_betalen_door_apotheek_obj.number|add:'-5' and num < paginator_nog_te_betalen_door_apotheek_obj.number|add:'5' %}
+                        <li class="page-item"><a class="page-link" href="?page_nog_te_betalen_door_apotheek={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                        {% endfor %}
+                        {% if paginator_nog_te_betalen_door_apotheek_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page_nog_te_betalen_door_apotheek={{ paginator_nog_te_betalen_door_apotheek_obj.next_page_number }}">Next</a></li>
+                        <li class="page-item"><a class="page-link" href="?page_nog_te_betalen_door_apotheek={{ paginator_nog_te_betalen_door_apotheek_obj.paginator.num_pages }}">Last</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Next</span></li>
+                        <li class="page-item disabled"><span class="page-link">Last</span></li>
+                        {% endif %}
+                     </ul>
+                  </div>
+               </nav>
+            </div>
+            <!-- /Account -->
+         </div>
+         <div class="card mb-4">
+            <h5 class="card-header">Betaalde events door apotheek</h5>
+            <!-- Account -->
+            <div class="card-body">
+               {% if paginator_betaalde_events_door_apotheek_obj %}
+               <table id="tbl_betaalde_events_door_apotheek_obj" class="table table-hover">
+                  <thead>
+                     <tr>
+                        <th class="text-center">Datum</th>
+                        <th class="text-center">Startuur</th>
+                        <th class="text-center">Einduur</th>
+                        <th class="text-center">Pauzeduur in minuten</th>
+                        <th class="text-center">Naam Assistent</th>
+                        <th class="text-center">Naam Apotheek</th>
+                        <th class="text-center">Bedrag</th>
+                     </tr>
+                  </thead>
+                  <tbody class="table-border-bottom-0">
+                     {% for event in paginator_betaalde_events_door_apotheek_obj %}
+                     <tr>
+                        <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
+                        <td align="center">{{ event.start_time|time:"H:i" }}</td>
+                        <td align="center">{{ event.end_time|time:"H:i" }}</td>
+                        <td align="center">{{ event.pauzeduur }}</td>
+                        <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
+                        <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                        <td align="center">€ 115</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+               {% else %}
+               <p align="center">Geen reeds betaalde events door apotheek gevonden</p>
+               {% endif %}
+               <!-- Pagination Controls -->
+               <nav aria-label="Page navigation" class="mt-4">
+                  <div class="d-flex justify-content-center">
+                     <ul class="pagination">
+                        {% if paginator_betaalde_events_door_apotheek_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page_betaalde_events_door_apotheek=1">First</a></li>
+                        <li class="page-item"><a class="page-link" href="?page_betaalde_events_door_apotheek={{ paginator_betaalde_events_door_apotheek_obj.previous_page_number }}">Previous</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">First</span></li>
+                        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                        {% endif %}
+                        {% for num in paginator_betaalde_events_door_apotheek_obj.paginator.page_range %}
+                        {% if paginator_betaalde_events_door_apotheek_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > paginator_betaalde_events_door_apotheek_obj.number|add:'-5' and num < paginator_betaalde_events_door_apotheek_obj.number|add:'5' %}
+                        <li class="page-item"><a class="page-link" href="?page_betaalde_events_door_apotheek={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                        {% endfor %}
+                        {% if paginator_betaalde_events_door_apotheek_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page_betaalde_events_door_apotheek={{ paginator_betaalde_events_door_apotheek_obj.next_page_number }}">Next</a></li>
+                        <li class="page-item"><a class="page-link" href="?page_betaalde_events_door_apotheek={{ paginator_betaalde_events_door_apotheek_obj.paginator.num_pages }}">Last</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Next</span></li>
+                        <li class="page-item disabled"><span class="page-link">Last</span></li>
+                        {% endif %}
+                     </ul>
+                  </div>
+               </nav>
+            </div>
+            <!-- /Account -->
+         </div>
       </div>
    </div>
 </div>
