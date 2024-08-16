@@ -216,9 +216,10 @@ def edit_event(request, event_id):
             except Exception as e:
                 logger.error("Unexpected error in edit_event: %s", str(e))
                 return JsonResponse({'error': 'Internal server error', 'details': str(e)}, status=500)
-        except:
+        except Exception as e:
             return JsonResponse({'error': 'Error bij editen', 'details': str(e)}, status=404)
-
+    else:
+        print(request.method)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 

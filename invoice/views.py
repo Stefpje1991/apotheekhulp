@@ -1,10 +1,12 @@
 import json
 
+import pytz
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.csrf import csrf_exempt
 
 from accounts.decorators import role_required
 from accounts.models import Assistent, User, Apotheek
@@ -60,7 +62,7 @@ def overview_link_assistent_apotheek_admin(request, user_id):
     return render(request, 'invoice/admin/overview_link_assistent_apotheek_admin.html', context)
 
 
-@role_required(2)
+@role_required(2, 3)
 @login_required(login_url='login')
 def overview_events_apotheek(request):
     user_id = request.user.id
@@ -135,7 +137,7 @@ def update_event_status_assistent(request, event_id):
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
 
-@role_required(1)
+@role_required(1, 3)
 @login_required(login_url='login')
 def overview_events_assistent(request):
     assistent = get_object_or_404(Assistent, user=request.user)
@@ -244,20 +246,21 @@ def overview_events_admin(request, user_id):
 def overview_all_events_admin(request):
     goed_te_keuren_events_door_assistent = Event.objects.filter(status='noaction').order_by('start_time')
     geweigerde_events_door_assistenten = Event.objects.filter(status='Declined').order_by('start_time')
-    goed_te_keuren_events_door_apotheek = Event.objects.filter(status='Accepted', status_apotheek='noaction').order_by('start_time')
+    goed_te_keuren_events_door_apotheek = Event.objects.filter(status='Accepted', status_apotheek='noaction').order_by(
+        'start_time')
     geweigerde_events_door_apotheken = Event.objects.filter(status='Accepted', status_apotheek='Declined').order_by(
         'start_time')
     nog_te_factureren_door_assistent = Event.objects.filter(status='Accepted', status_apotheek='Accepted',
                                                             invoiced=False).order_by('start_time')
     nog_te_factureren_aan_apotheek = (Event.objects.filter(status='Accepted', status_apotheek='Accepted',
-                                                            invoiced=True, invoiced_to_apotheek=False)
+                                                           invoiced=True, invoiced_to_apotheek=False)
                                       .order_by('start_time'))
     nog_te_betalen_door_apotheek = Event.objects.filter(status='Accepted', status_apotheek='Accepted',
-                                                            invoiced=True, invoiced_to_apotheek=True,
+                                                        invoiced=True, invoiced_to_apotheek=True,
                                                         paid_by_apotheek=False).order_by('start_time')
     betaalde_events_door_apotheek = Event.objects.filter(status='Accepted', status_apotheek='Accepted',
-                                                        invoiced=True, invoiced_to_apotheek=True,
-                                                        paid_by_apotheek=True).order_by('start_time')
+                                                         invoiced=True, invoiced_to_apotheek=True,
+                                                         paid_by_apotheek=True).order_by('start_time')
 
     paginator_goed_te_keuren_events_door_assistent = Paginator(goed_te_keuren_events_door_assistent, 5)
     page_number_goed_te_keuren_door_assistent = request.GET.get('page_goed_te_keuren_door_assistent')
@@ -310,3 +313,71 @@ def overview_all_events_admin(request):
         'paginator_betaalde_events_door_apotheek_obj': paginator_betaalde_events_door_apotheek_obj
     }
     return render(request, 'invoice/admin/overview_all_events.html', context=context)
+
+
+@role_required(3)
+def get_event_data(request, event_id):
+    try:
+        event = Event.objects.get(id=event_id)
+        assistenten = Assistent.objects.all()  # or use a queryset as needed
+        apotheken = Apotheek.objects.all()  # or use a queryset as needed
+    except Event.DoesNotExist:
+        return JsonResponse({'status': 'error', 'error': 'Event not found'}, status=404)
+
+    # Convert times from UTC to Brussels time
+    local_tz = pytz.timezone('Europe/Brussels')
+
+    event_start_time = event.start_time.astimezone(local_tz)
+    event_end_time = event.end_time.astimezone(local_tz)
+
+    event_data = {
+        'id': event.id,
+        'date': event_start_time.strftime('%Y-%m-%d'),
+        'startTime': event_start_time.strftime('%H:%M'),
+        'endTime': event_end_time.strftime('%H:%M'),
+        'pauzeDuur': event.pauzeduur,
+        'assistent': event.assistent.id,
+        'apotheek': event.apotheek.id
+    }
+
+    assistent_data = [{'id': a.id, 'name': f"{a.user.first_name} {a.user.last_name}"} for a in assistenten]
+    apotheek_data = [{'id': p.id, 'name': p.apotheek_naamBedrijf} for p in apotheken]
+
+    return JsonResponse({
+        'status': 'success',
+        'event': event_data,
+        'assistants': assistent_data,
+        'pharmacies': apotheek_data
+    })
+
+
+@role_required(3)
+@csrf_exempt
+def edit_event_overview_pagina_goed_te_keuren_door_assistent_admin(request, event_id):
+    if request.method == 'POST':
+        try:
+            event = get_object_or_404(Event, id=event_id)
+
+            # Parse the JSON data from the request body
+            import json
+            data = json.loads(request.body)
+
+            # Update event fields with new data
+            event.date = data.get('date')
+            event.start_time = f"{data.get('date')} {data.get('startTime')}"
+            event.end_time = f"{data.get('date')} {data.get('endTime')}"
+            event.pauzeDuur = data.get('pauzeDuur')
+            event.assistent_id = data.get('assistent')
+            event.apotheek_id = data.get('apotheek')
+            event.status = 'noaction'
+            event.status_apotheek = 'noaction'
+            event.status_apotheek_changed_by = None
+
+            # Save the updated event to the database
+            event.save()
+
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'error': str(e)})
+
+    return JsonResponse({'status': 'error', 'error': 'Invalid request method'})

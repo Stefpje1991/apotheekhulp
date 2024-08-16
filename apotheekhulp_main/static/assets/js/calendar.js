@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+
     var calendarEl = document.getElementById('calendar');
     if (!calendarEl) {
         return; // Exit if the element is not found
@@ -393,4 +394,26 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+function deleteEvent(eventId) {
+        const csrfToken = getCookie('csrftoken');
+
+        fetch(`/calendar/delete_event/${eventId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload(); // Reload the page to reflect the changes
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+    }
 
