@@ -106,7 +106,7 @@
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
                         <td align="center">
-                           <span class="badge bg-warning" style="cursor: pointer;" onclick="">Bewerken</span>
+                           <span class="badge bg-warning edit-btn-goed-te-keuren-door-assistent" style="cursor: pointer;" data-event-id={{event.id}}>Bewerken</span>
                         </td>
                         <td align="center">
                            <span class="badge bg-danger" style="cursor: pointer;" onclick="deleteEvent({{ event.id }})">Verwijderen</span>
@@ -165,11 +165,12 @@
                         <th class="text-center">Naam Apotheek</th>
                         <th class="text-center"></th>
                         <th class="text-center"></th>
+                        <th class="text-center"></th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
                      {% for event in paginator_goed_te_keuren_events_door_apotheek_obj %}
-                     <tr>
+                     <tr data-event-id="{{ event.id }}">
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
                         <td align="center">{{ event.end_time|time:"H:i" }}</td>
@@ -177,10 +178,13 @@
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
                         <td align="center">
-                           <span class="badge bg-success" style="cursor: pointer;" onclick="">Goedkeuren</span>
+                           <span class="badge bg-success accept_apotheek_event" style="cursor: pointer;">Goedkeuren</span>
                         </td>
                         <td align="center">
-                           <span class="badge bg-danger" style="cursor: pointer;" onclick="">Weigeren</span>
+                           <span class="badge bg-warning edit-btn-goed-te-keuren-door-assistent" style="cursor: pointer;">Wijzigen</span>
+                        </td>
+                        <td align="center">
+                           <span class="badge bg-danger" style="cursor: pointer;" onclick="deleteEvent({{ event.id }})">Verwijderen</span>
                         </td>
                      </tr>
                      {% endfor %}
@@ -309,7 +313,7 @@
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
-                        <td align="center">€ 115</td>
+                        <td align="center">€ {{ event.totaalbedragWerk }}</td>
                      </tr>
                      {% endfor %}
                   </tbody>

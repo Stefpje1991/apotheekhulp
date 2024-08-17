@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 
 import pytz
 from django.contrib import messages
@@ -262,6 +263,50 @@ def overview_all_events_admin(request):
                                                          invoiced=True, invoiced_to_apotheek=True,
                                                          paid_by_apotheek=True).order_by('start_time')
 
+    items_nog_te_factureren_door_assistent = []
+    for item in nog_te_factureren_door_assistent:
+        id = item.id
+        start_time = item.start_time
+        end_time = item.end_time
+        pauzeduur = timedelta(minutes=item.pauzeduur)
+        gewerkte_uren = (end_time - start_time - pauzeduur).total_seconds() / 3600
+        gewerkte_uren = round(gewerkte_uren, 4)
+        assistent = item.assistent
+        apotheek = item.apotheek
+        try:
+            link = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent, apotheek=apotheek)
+            uurtariefAssistent = float(link.uurtariefAssistent)
+            afstandInKilometers = link.afstandInKilometers
+            uurtariefApotheek = link.uurtariefApotheek
+            kilometervergoeding = link.kilometervergoeding
+            totaalbedragWerk = round(gewerkte_uren * uurtariefAssistent, 2)
+        except:
+            link = ""
+            uurtariefAssistent = 0
+            uurtariefApotheek = 0
+            kilometervergoeding = False
+            afstandInKilometers = 0
+            totaalbedragWerk = 0
+
+
+        item_to_add = {
+            'id': id,
+            'start_time': start_time,
+            'end_time': end_time,
+            'pauzeduur': pauzeduur,
+            'assistent': assistent,
+            'apotheek': apotheek,
+            'link': link,
+            'uurtariefAssistent': uurtariefAssistent,
+            'uurtariefApotheek': uurtariefApotheek,
+            'afstandinKilometers': afstandInKilometers,
+            'kilometervergoeding': kilometervergoeding,
+            'totaalbedragWerk': totaalbedragWerk
+        }
+
+        items_nog_te_factureren_door_assistent.append(item_to_add)
+
+
     paginator_goed_te_keuren_events_door_assistent = Paginator(goed_te_keuren_events_door_assistent, 5)
     page_number_goed_te_keuren_door_assistent = request.GET.get('page_goed_te_keuren_door_assistent')
     paginator_goed_te_keuren_events_door_assistent_obj = paginator_goed_te_keuren_events_door_assistent.get_page(
@@ -282,7 +327,7 @@ def overview_all_events_admin(request):
     paginator_geweigerde_events_door_apotheken_obj = paginator_geweigerde_events_door_apotheken.get_page(
         page_number_geweigerde_events_door_apotheken)
 
-    paginator_nog_te_factureren_door_assistent = Paginator(nog_te_factureren_door_assistent, 5)
+    paginator_nog_te_factureren_door_assistent = Paginator(items_nog_te_factureren_door_assistent, 5)
     page_number_nog_te_factureren_door_assistent = request.GET.get('page_nog_te_factureren_door_assistent')
     paginator_nog_te_factureren_door_assistent_obj = paginator_nog_te_factureren_door_assistent.get_page(
         page_number_nog_te_factureren_door_assistent)
@@ -381,3 +426,16 @@ def edit_event_overview_pagina_goed_te_keuren_door_assistent_admin(request, even
             return JsonResponse({'status': 'error', 'error': str(e)})
 
     return JsonResponse({'status': 'error', 'error': 'Invalid request method'})
+
+
+@role_required(3)
+@csrf_exempt
+def accept_apotheek_event(request, event_id):
+    if request.method == 'POST':
+        event = get_object_or_404(Event, id=event_id)
+        event.status = 'Accepted'
+        event.status_apotheek = 'Accepted'
+        event.status_apotheek_changed_by = request.user
+        event.save()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'fail'})

@@ -39,6 +39,31 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    document.addEventListener('click', function (event) {
+        if (event.target.matches('.accept_apotheek_event')) {
+            const eventId = event.target.closest('tr').getAttribute('data-event-id');
+            fetch(`/invoice/admin/accept_apotheek_event/${eventId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ event_id: eventId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();  // Reload the page to reflect changes
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                alert(`An error occurred: ${error.message}`);
+            });
+        }
+    });
+
     const editEventForm = document.getElementById('editEventForm');
 
     // Handle form submission to update the event
