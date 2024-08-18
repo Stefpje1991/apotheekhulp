@@ -268,8 +268,10 @@ def overview_all_events_admin(request):
         id = item.id
         start_time = item.start_time
         end_time = item.end_time
+        aanwezige_tijd = end_time - start_time
         pauzeduur = timedelta(minutes=item.pauzeduur)
         gewerkte_uren = (end_time - start_time - pauzeduur).total_seconds() / 3600
+        gewerkte_uren_modal = end_time - start_time - pauzeduur
         gewerkte_uren = round(gewerkte_uren, 4)
         assistent = item.assistent
         apotheek = item.apotheek
@@ -279,7 +281,11 @@ def overview_all_events_admin(request):
             afstandInKilometers = link.afstandInKilometers
             uurtariefApotheek = link.uurtariefApotheek
             kilometervergoeding = link.kilometervergoeding
-            totaalbedragWerk = round(gewerkte_uren * uurtariefAssistent, 2)
+            bedragFietsvergoeding = 0.00
+            if kilometervergoeding:
+                bedragFietsvergoeding = round(afstandInKilometers * 0.43, 2)
+            totaalbedragZonderFietsvergoeding = round(gewerkte_uren * uurtariefAssistent, 2)
+            totaalbedragWerk = round(round(gewerkte_uren * uurtariefAssistent, 2) + bedragFietsvergoeding, 2)
         except:
             link = ""
             uurtariefAssistent = 0
@@ -287,6 +293,8 @@ def overview_all_events_admin(request):
             kilometervergoeding = False
             afstandInKilometers = 0
             totaalbedragWerk = 0
+            bedragFietsvergoeding = 0.00
+            totaalbedragZonderFietsvergoeding = 0.00
 
 
         item_to_add = {
@@ -301,7 +309,11 @@ def overview_all_events_admin(request):
             'uurtariefApotheek': uurtariefApotheek,
             'afstandinKilometers': afstandInKilometers,
             'kilometervergoeding': kilometervergoeding,
-            'totaalbedragWerk': totaalbedragWerk
+            'totaalbedragWerk': totaalbedragWerk,
+            'bedragFietsvergoeding': bedragFietsvergoeding,
+            'aanwezige_tijd': aanwezige_tijd,
+            'gewerkte_tijd': gewerkte_uren_modal,
+            'totaalbedrag_zonder_fietsvergoeding': totaalbedragZonderFietsvergoeding
         }
 
         items_nog_te_factureren_door_assistent.append(item_to_add)

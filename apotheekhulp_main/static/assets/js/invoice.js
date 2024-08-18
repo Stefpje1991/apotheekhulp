@@ -31,7 +31,72 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     };
 
-    // Handle click events for "Bewerken" buttons
+    // Function to open and populate the detail modal on table row click
+    function openDetailModal(row) {
+        const datum = row.cells[0].textContent;
+        const startuur = row.cells[1].textContent;
+        const einduur = row.cells[2].textContent;
+        const pauzeduur = row.cells[3].textContent;
+
+        // Extract additional data attributes from the row
+        const link = row.getAttribute('data-link');
+        const aanwezigeTijd = row.getAttribute('data-aanwezige-tijd');
+        const gewerkteTijd = row.getAttribute('data-gewerkte-tijd');
+        const uurtariefAssistent = row.getAttribute('data-uurtarief-assistent');
+        const uurtariefApotheek = row.getAttribute('data-uurtarief-apotheek');
+        const afstandInKilometers = row.getAttribute('data-afstand-in-kilometers');
+        const kilometervergoeding = row.getAttribute('data-kilometervergoeding');
+        const totaalbedragWerk = row.getAttribute('data-totaalbedrag-werk');
+        const bedragFietsvergoeding = row.getAttribute('data-bedrag-fietsvergoeding');
+        const totaalbedrag_zonder_fietsvergoeding = row.getAttribute('data-totaalbedrag-zonder-fietsvergoeding');
+        const totaalbedrag = row.getAttribute('data-totaalbedrag');
+
+        // Populate the detail modal with the row data
+        document.getElementById('detailFactuurOpenstaandAssistent_event_date').textContent = datum;
+        document.getElementById('detailFactuurOpenstaandAssistent_start_time').textContent = startuur;
+        document.getElementById('detailFactuurOpenstaandAssistent_end_time').textContent = einduur;
+        document.getElementById('detailFactuurOpenstaandAssistent_pauzeduur').textContent = pauzeduur;
+        document.getElementById('detailFactuurOpenstaandAssistent_aanwezige_tijd').textContent = aanwezigeTijd;
+        document.getElementById('detailFactuurOpenstaandAssistent_gewerkte_tijd').textContent = gewerkteTijd;
+        document.getElementById('detailFactuurOpenstaandAssistent_uurtarief').textContent = '€ ' + uurtariefAssistent;
+        document.getElementById('detailFactuurOpenstaandAssistent_totaalbedrag_zonder_fietsvergoeding').textContent = '€ ' + totaalbedrag_zonder_fietsvergoeding;
+
+        // Show or hide the kilometervergoeding section
+        const kilometervergoedingElement = document.getElementById('detailFactuurOpenstaandAssistent_kilometervergoeding');
+        const afstandInKilometersElement = document.getElementById('detailFactuurOpenstaandAssistent_afstand_in_kilometers');
+        const bedragFietsvergoedingElement = document.getElementById('detailFactuurOpenstaandAssistent_totale_kilometervergoeding');
+        const totaalBedragElement = document.getElementById('detailFactuurOpenstaandAssistent_totaalbedrag');
+        if (kilometervergoeding === 'True') {
+            afstandInKilometersElement.textContent = afstandInKilometers; // Or any appropriate message
+            afstandInKilometersElement.parentElement.style.display = 'block'; // Show the element
+            bedragFietsvergoedingElement.textContent = '€ ' + bedragFietsvergoeding;
+            bedragFietsvergoedingElement.parentElement.style.display = 'block'; // Show the element
+            totaalBedragElement.textContent = '€ ' + totaalbedrag;
+            totaalBedragElement.parentElement.style.display = 'block';
+        } else {
+            afstandInKilometersElement.parentElement.style.display = 'none'; // Hide the element
+            bedragFietsvergoedingElement.parentElement.style.display = 'none';
+            totaalBedragElement.parentElement.style.display = 'none';
+        }
+
+        // Show the detail modal
+        const detailModalElement = document.getElementById('detailFactuurOpenstaandAssistent');
+        const detailModal = new bootstrap.Modal(detailModalElement);
+        detailModal.show();
+    }
+
+    // Handle click events for the table rows to show the detail modal
+    const table = document.getElementById('tbl_nog_te_factureren_door_assistent_obj');
+    if (table) {
+        table.addEventListener('click', function (event) {
+            const row = event.target.closest('tr');
+            if (row && row.querySelector('td')) {
+                openDetailModal(row);
+            }
+        });
+    }
+
+    // Existing code for handling "Bewerken" buttons and form submissions
     document.addEventListener('click', function (event) {
         if (event.target.matches('.edit-btn-goed-te-keuren-door-assistent')) {
             const eventId = event.target.getAttribute('data-event-id');

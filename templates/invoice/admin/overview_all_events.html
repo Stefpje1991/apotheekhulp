@@ -306,7 +306,18 @@
                   </thead>
                   <tbody class="table-border-bottom-0">
                      {% for event in paginator_nog_te_factureren_door_assistent_obj %}
-                     <tr>
+                     <tr data-id="{{ event.id }}"
+                         data-link="{{ event.link }}"
+                         data-uurtarief-assistent="{{ event.uurtariefAssistent }}"
+                         data-uurtarief-apotheek="{{ event.uurtariefApotheek }}"
+                         data-afstand-in-kilometers="{{ event.afstandinKilometers }}"
+                         data-kilometervergoeding="{{ event.kilometervergoeding }}"
+                         data-totaalbedrag-werk="{{ event.totaalbedragWerk }}"
+                         data-bedrag-fietsvergoeding="{{ event.bedragFietsvergoeding }}"
+                         data-aanwezige-tijd="{{ event.aanwezige_tijd }}"
+                         data-gewerkte-tijd="{{ event.gewerkte_tijd }}"
+                         data-totaalbedrag-zonder-fietsvergoeding="{{ event.totaalbedrag_zonder_fietsvergoeding }}"
+                         data-totaalbedrag="{{ event.totaalbedragWerk }}">
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
                         <td align="center">{{ event.end_time|time:"H:i" }}</td>
@@ -598,4 +609,33 @@
          </div>
       </div>
    </div>
+
+
+<div class="modal fade" id="detailFactuurOpenstaandAssistent" tabindex="-1" aria-labelledby="detailFactuurOpenstaandAssistent" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="detailFactuurOpenstaandAssistentModal">Detail</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <p><strong>Datum:</strong> <span id="detailFactuurOpenstaandAssistent_event_date"></span></p>
+            <p><strong>Beginuur:</strong> <span id="detailFactuurOpenstaandAssistent_start_time"></span></p>
+            <p><strong>Einduur:</strong> <span id="detailFactuurOpenstaandAssistent_end_time"></span></p>
+            <p><strong>Aanwezige tijd:</strong> <span id="detailFactuurOpenstaandAssistent_aanwezige_tijd"></span></p>
+            <p><strong>Pauzeduur:</strong> <span id="detailFactuurOpenstaandAssistent_pauzeduur"></span></p>
+            <p><strong>Gewerkte tijd:</strong> <span id="detailFactuurOpenstaandAssistent_gewerkte_tijd"></span></p>
+            <p><strong>Uurtarief:</strong> <span id="detailFactuurOpenstaandAssistent_uurtarief"></span></p>
+            <p><strong>Bedrag:</strong> <span id="detailFactuurOpenstaandAssistent_totaalbedrag_zonder_fietsvergoeding"></span></p>
+            <p><strong>Afstand in kilometers:</strong> <span id="detailFactuurOpenstaandAssistent_afstand_in_kilometers"></span></p>
+            <p><strong>Bedrag per kilometer:</strong> € 0.43</p>
+            <p><strong>Kilometervergoeding:</strong> <span id="detailFactuurOpenstaandAssistent_totale_kilometervergoeding"></span></p>
+            <p><strong>Totaalbedrag:</strong> <span id="detailFactuurOpenstaandAssistent_totaalbedrag"></span></p>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+         </div>
+      </div>
+   </div>
+</div>
 {% endblock %}
