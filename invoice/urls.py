@@ -11,6 +11,7 @@ urlpatterns = [
     path('update_event_status_assistent/<int:event_id>/', views.update_event_status_assistent, name='update_event_status_assistent'),
     path('delete-link/<int:user_id>/<int:link_id>/', views.delete_link, name='delete_link'),
     path('admin/get_event_data/<int:event_id>/', views.get_event_data, name='get_event_data'),
+    path('edit_link/<int:user_id>/<int:link_id>/', views.edit_link_between_assistent_and_apotheek, name='edit_link_between_assistent_and_apotheek'),
     path('admin/edit_event_overview_pagina_goed_te_keuren_door_assistent_admin/<int:event_id>/', views.edit_event_overview_pagina_goed_te_keuren_door_assistent_admin, name='edit_event_overview_pagina_goed_te_keuren_door_assistent_admin'),
     path('admin/accept_apotheek_event/<int:event_id>/', views.accept_apotheek_event, name='accept_apotheek_event'),
 ]

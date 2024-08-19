@@ -16,7 +16,7 @@
                         <th class="text-center">Datum</th>
                         <th class="text-center">Startuur</th>
                         <th class="text-center">Einduur</th>
-                        <th class="text-center">Pauzeduur in minuten</th>
+                        <th class="text-center" style="width: 5%">Pauzeduur in minuten</th>
                         <th class="text-center">Naam Apotheek</th>
                         <th class="text-center"></th>
                         <th class="text-center"></th>
@@ -55,24 +55,35 @@
             <!-- Account -->
             <div class="card-body">
                {% if nog_te_factureren_events.exists %}
+               <div class="d-flex justify-content-end mb-3">
+                  <button type="button" class="btn btn-warning" id="createInvoiceButton_assistent">
+                     Maak Nieuwe Factuur
+                  </button>
+               </div>
                <table id="tbl_overzicht_nog_te_factureren_assistent" class="table table-hover">
                   <thead>
                      <tr>
+                        <th class="text-center" style="width: 5%">Selecteer</th>
                         <th class="text-center">Datum</th>
                         <th class="text-center">Startuur</th>
                         <th class="text-center">Einduur</th>
-                        <th class="text-center">Pauzeduur in minuten</th>
+                        <th class="text-center" style="width: 5%">Pauzeduur in minuten</th>
                         <th class="text-center">Naam Apotheek</th>
+                        <th class="text-center">Bedrag</th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
                   {% for event in nog_te_factureren_events %}
                      <tr>
+                        <td align="center">
+                           <input type="checkbox" name="select_event" value="{{ event.id }}">
+                        </td>
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
                         <td align="center">{{ event.end_time|time:"H:i" }}</td>
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                        <td align="center">€ 0.00</td>
                      </tr>
                   {% endfor %}
                   </tbody>

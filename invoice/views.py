@@ -6,14 +6,15 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
 from accounts.decorators import role_required
 from accounts.models import Assistent, User, Apotheek
 from calendar_app.models import Event
 from invoice.forms import LinkBetweenAssistentAndApotheekForm
-from invoice.models import LinkBetweenAssistentAndApotheek
+from .models import LinkBetweenAssistentAndApotheek
 
 
 # Create your views here.
@@ -158,8 +159,9 @@ def delete_link(request, user_id, link_id):
 
     if request.method == 'POST':
         # Ensure that the current user has permission to delete the link
-        link.delete()
-        messages.success(request, 'De link is succesvol verwijderd.')
+        link.actief = False
+        link.save()
+        messages.success(request, 'De link is succesvol gedeactiveerd.')
 
     return redirect('overview_link_assistent_apotheek_admin', user_id=user_id)
 
@@ -296,7 +298,6 @@ def overview_all_events_admin(request):
             bedragFietsvergoeding = 0.00
             totaalbedragZonderFietsvergoeding = 0.00
 
-
         item_to_add = {
             'id': id,
             'start_time': start_time,
@@ -317,7 +318,6 @@ def overview_all_events_admin(request):
         }
 
         items_nog_te_factureren_door_assistent.append(item_to_add)
-
 
     paginator_goed_te_keuren_events_door_assistent = Paginator(goed_te_keuren_events_door_assistent, 5)
     page_number_goed_te_keuren_door_assistent = request.GET.get('page_goed_te_keuren_door_assistent')
@@ -451,3 +451,31 @@ def accept_apotheek_event(request, event_id):
         event.save()
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'fail'})
+
+
+def edit_link_between_assistent_and_apotheek(request, user_id, link_id):
+    if request.method == 'POST':
+        try:
+            # Retrieve the link object
+            link = get_object_or_404(LinkBetweenAssistentAndApotheek, id=link_id)
+
+            # Parse the JSON data from the request body
+            data = json.loads(request.body)
+
+            # Update the link object with new values
+            link.uurtariefAssistent = data.get('uurtariefAssistent', link.uurtariefAssistent)
+            link.uurtariefApotheek = data.get('uurtariefApotheek', link.uurtariefApotheek)
+            link.afstandInKilometers = data.get('afstandInKilometers', link.afstandInKilometers)
+            link.kilometervergoeding = data.get('kilometervergoeding') == 'on'
+
+            # Save the updated object
+            link.save()
+
+            return JsonResponse({'status': 'success'})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'error': 'Invalid JSON'})
+        except Exception as e:
+            print(f"Error: {e}")
+            return JsonResponse({'status': 'error', 'error': str(e)})
+
+    return JsonResponse({'status': 'error', 'error': 'Invalid request method'})

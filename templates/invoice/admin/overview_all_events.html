@@ -170,7 +170,7 @@
                   </thead>
                   <tbody class="table-border-bottom-0">
                      {% for event in paginator_goed_te_keuren_events_door_apotheek_obj %}
-                     <tr data-event-id="{{ event.id }}">
+                     <tr id='row-id' data-event-id="{{ event.id }}">
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
                         <td align="center">{{ event.end_time|time:"H:i" }}</td>

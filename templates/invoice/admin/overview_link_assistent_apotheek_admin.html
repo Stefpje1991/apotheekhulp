@@ -23,7 +23,7 @@
             </div>
             <!-- Account -->
             <div class="card-body">
-               <table id="tbl_link_assistenten_apotheken" name="tbl_link_assistenten_apotheken" class="table table-hover">
+               <table id="tbl_link_assistenten_apotheken" data-edit-link-url="{% url 'edit_link_between_assistent_and_apotheek' user_id=user_id link_id=0 %}" name="tbl_link_assistenten_apotheken" class="table table-hover">
                   <thead>
                      <tr>
                         <th>Assistent</th>
@@ -37,36 +37,42 @@
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
-                     {% for link in links %}
-                     <tr>
+                    {% for link in links %}
+                    <tr data-link-id="{{ link.id }}"
+                        data-assistent="{{ link.assistent.user.first_name }} {{ link.assistent.user.last_name }}"
+                        data-apotheek="{{ link.apotheek.apotheek_naamBedrijf }}"
+                        data-uurtarief-assistent="{{ link.uurtariefAssistent }}"
+                        data-uurtarief-apotheek="{{ link.uurtariefApotheek }}"
+                        data-kilometervergoeding="{{ link.kilometervergoeding|yesno:'on,off' }}"
+                        data-afstand-in-km="{{ link.afstandInKilometers }}">
                         <td align="center">{{ link.assistent.user.first_name }} {{ link.assistent.user.last_name }}</td>
                         <td align="center">{{ link.apotheek.apotheek_naamBedrijf }}</td>
                         <td align="center">{{ link.apotheek.user.first_name }} {{ link.apotheek.user.last_name }}</td>
                         <td align="center">€ {{ link.uurtariefAssistent }}</td>
                         <td align="center">€ {{ link.uurtariefApotheek }}</td>
-                        {% if link.kilometervergoeding %}
-                        <td align="center"><i class="fas fa-check"></i></td>
-                        {% else %}
-                        <td align="center"><i class="fas fa-times"></i></td>
-                        {% endif %}
+                        <td align="center">
+                            {% if link.kilometervergoeding %}
+                            <i class="fas fa-check"></i>
+                            {% else %}
+                            <i class="fas fa-times"></i>
+                            {% endif %}
+                        </td>
                         <td align="center">{{ link.afstandInKilometers }}</td>
-                        {% if link.actief %}
-                        <td align="center"><i class="fas fa-check"></i></td>
-                        {% else %}
-                        <td align="center"><i class="fas fa-times"></i></td>
-                        {% endif %}
-                       <!-- Delete Button -->
-                       <td align="center">
-                           <form method="post" action="{% url 'delete_link' user_id=user_id link_id=link.id %}" onsubmit="return confirm('Weet je zeker dat je deze link wilt verwijderen?');">
-                               {% csrf_token %}
-                               <button type="submit" class="btn btn-danger btn-sm">
-                                   <i class="fas fa-trash-alt"></i>
-                               </button>
-                           </form>
-                       </td>
-                     </tr>
-                     {% endfor %}
-                  </tbody>
+                        <td align="center">
+                            {% if link.actief %}
+                            <i class="fas fa-check"></i>
+                            {% else %}
+                            <i class="fas fa-times"></i>
+                            {% endif %}
+                        </td>
+                        <td align="center">
+                            <button type="button" class="btn btn-warning btn-sm edit-link-assistent-apotheek-btn" data-bs-toggle="modal" data-bs-target="#editLinkModal">
+                                <i class="fas fa-pencil"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
                </table>
             </div>
          </div>
@@ -74,32 +80,54 @@
    </div>
 </div>
 
-<!-- Modal Structure -->
-<div class="modal fade {% if form.errors %}show{% endif %}" id="addLinkModal" tabindex="-1" aria-labelledby="addLinkModalLabel" aria-hidden="true" {% if form.errors %}style="display: block;"{% endif %}>
-   <div class="modal-dialog">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h5 class="modal-title" id="addLinkModalLabel">Voeg nieuwe link toe</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeModal()"></button>
-         </div>
-         <form id="addLinkForm" method="post" action="{% url 'overview_link_assistent_apotheek_admin' user_id %}">
-            <div class="modal-body">
-               {% csrf_token %}
-               <input type="hidden" name="assistent_id" id="modalAssistentId" value="{{ assistent_id }}">
-               <input type="hidden" name="apotheek_id" id="modalApotheekId" value="{{ apotheek_id }}">
-               <input type="hidden" id="assistentName" value="{{ assistent.user.first_name }} {{ assistent.user.last_name }}">
-               <input type="hidden" id="apotheekName" value="{{ apotheek.apotheek_naamBedrijf }}">
+<!-- Edit Modal Structure -->
+<div class="modal fade" id="editLinkModal" tabindex="-1" aria-labelledby="editLinkModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLinkModalLabel">Bewerk Link</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editLinkForm" method="post">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" name="link_id" id="editModalLinkId">
 
-               <!-- Crispy form to handle field errors -->
-               {{ form|crispy }}
-            </div>
-            <div class="modal-footer">
-               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeModal()">Sluiten</button>
-               <button type="submit" class="btn btn-primary">Opslaan</button>
-            </div>
-         </form>
-      </div>
-   </div>
+                    <!-- Assuming you use crispy forms, you can render the form fields here -->
+                    <div class="mb-3">
+                        <label for="id_assistent" class="form-label">Assistent</label>
+                        <input type="text" class="form-control" id="id_assistent" name="assistent" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_apotheek" class="form-label">Apotheek</label>
+                        <input type="text" class="form-control" id="id_apotheek" name="apotheek" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_uurtariefAssistent" class="form-label">Uurtarief Assistent</label>
+                        <input type="number" class="form-control" id="id_uurtariefAssistent" name="uurtariefAssistent" step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_uurtariefApotheek" class="form-label">Uurtarief Apotheek</label>
+                        <input type="number" class="form-control" id="id_uurtariefApotheek" name="uurtariefApotheek" step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_afstandInKilometers" class="form-label">Afstand in Km</label>
+                        <input type="number" class="form-control" id="id_afstandInKilometers" name="afstandInKilometers" step="0.01">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="on" id="id_kilometervergoeding" name="kilometervergoeding">
+                        <label class="form-check-label" for="id_kilometervergoeding">
+                            Kilometervergoeding
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <div class="row">

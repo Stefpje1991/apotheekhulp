@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Function to fetch event data and populate the modal
     window.openEditModal = function (eventId) {
+        const eventContainer = document.getElementById('row-id');
+        if (eventContainer){
+            eventId = eventContainer.getAttribute('data-event-id')
+        }
         fetch(`/invoice/admin/get_event_data/${eventId}/`)
             .then(response => response.json())
             .then(data => {
@@ -84,6 +88,29 @@ document.addEventListener('DOMContentLoaded', function () {
         const detailModal = new bootstrap.Modal(detailModalElement);
         detailModal.show();
     }
+
+    const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButton_assistent');
+
+    buttonCreateInvoiceAssistent.addEventListener('click', function () {
+        // Get all checkboxes with the name 'select_event'
+        const checkboxes = document.querySelectorAll('input[name="select_event"]');
+        let isSelected = false;
+
+        // Check if any checkbox is selected
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                isSelected = true;
+            }
+        });
+
+        // If no checkbox is selected, alert the user
+        if (!isSelected) {
+            alert('Selecteer minstens één item om een factuur aan te maken.');
+        } else {
+            // Proceed with your action, e.g., form submission or redirection
+            alert('Factuur wordt aangemaakt.'); // Placeholder for actual action
+        }
+    });
 
     // Handle click events for the table rows to show the detail modal
     const table = document.getElementById('tbl_nog_te_factureren_door_assistent_obj');
@@ -203,5 +230,93 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             selectElement.appendChild(optionElement);
         });
+    }
+    // Check if urlContainer exists before accessing its attributes
+    const urlContainer = document.getElementById('urlContainer');
+    if (urlContainer) {
+        const baseEditLinkUrl = urlContainer.getAttribute('data-edit-link-url');
+
+        // Check if baseEditLinkUrl exists
+        if (baseEditLinkUrl) {
+            const editButtons = document.querySelectorAll('.edit-link-assistent-apotheek-btn');
+                // Access the URL pattern from the data attribute
+
+            editButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const row = this.closest('tr');
+                    const linkId = row.getAttribute('data-link-id');
+                    const assistentName = row.querySelector('td:nth-child(1)').textContent.trim();
+                    const apotheekName = row.querySelector('td:nth-child(2)').textContent.trim();
+                    const uurtariefAssistent = row.querySelector('td:nth-child(4)').textContent.trim().replace('€ ', '');
+                    const uurtariefApotheek = row.querySelector('td:nth-child(5)').textContent.trim().replace('€ ', '');
+                    const kilometervergoeding = row.querySelector('td:nth-child(6) i').classList.contains('fa-check');
+                    const afstandInKilometers = row.querySelector('td:nth-child(7)').textContent.trim();
+
+                    // Populate modal fields immediately
+                    const modalLinkId = document.getElementById('editModalLinkId');
+                    const modalAssistent = document.getElementById('id_assistent');
+                    const modalApotheek = document.getElementById('id_apotheek');
+                    const modalUurtariefAssistent = document.getElementById('id_uurtariefAssistent');
+                    const modalUurtariefApotheek = document.getElementById('id_uurtariefApotheek');
+                    const modalKilometervergoeding = document.getElementById('id_kilometervergoeding');
+                    const modalAfstandInKilometers = document.getElementById('id_afstandInKilometers');
+
+                    modalLinkId.value = linkId;
+                    modalAssistent.value = assistentName;
+                    modalApotheek.value = apotheekName;
+                    modalUurtariefAssistent.value = uurtariefAssistent;
+                    modalUurtariefApotheek.value = uurtariefApotheek;
+                    modalKilometervergoeding.checked = kilometervergoeding;
+                    modalAfstandInKilometers.value = afstandInKilometers;
+
+                    // Update the form action URL
+                    const formAction = baseEditLinkUrl.replace('/0/', `/${linkId}/`);
+                    document.getElementById('editLinkForm').setAttribute('action', formAction);
+
+                    // Show the modal
+                    const editModal = new bootstrap.Modal(document.getElementById('editLinkModal'));
+                    editModal.show();
+                });
+            });
+        }
+    }
+
+    // Handle the form submission
+    const editLinkForm = document.getElementById('editLinkForm');
+    if(editLinkForm){
+
+    editLinkForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const formData = {
+            uurtariefAssistent: document.getElementById('id_uurtariefAssistent').value,
+            uurtariefApotheek: document.getElementById('id_uurtariefApotheek').value,
+            afstandInKilometers: document.getElementById('id_afstandInKilometers').value,
+            kilometervergoeding: document.getElementById('id_kilometervergoeding').checked ? 'on' : 'off'
+        };
+        const formAction = editLinkForm.getAttribute('action');
+
+        fetch(formAction, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value // Ensure CSRF token is included
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Optionally, refresh or update the page content
+                location.reload(); // Refresh the page or update the content as needed
+            } else {
+                alert('Error updating link: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the link');
+        });
+    });
     }
 });
