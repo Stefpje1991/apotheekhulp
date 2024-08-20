@@ -54,7 +54,7 @@
          <div class="card mb-4">
             <!-- Account -->
             <div class="card-body">
-               {% if nog_te_factureren_events.exists %}
+               {% if nog_te_factureren_events %}
                <div class="d-flex justify-content-end mb-3">
                   <button type="button" class="btn btn-warning" id="createInvoiceButton_assistent">
                      Maak Nieuwe Factuur
@@ -83,7 +83,7 @@
                         <td align="center">{{ event.end_time|time:"H:i" }}</td>
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
-                        <td align="center">€ 0.00</td>
+                        <td align="center">€ {{ event.totaalbedragWerk }}</td>
                      </tr>
                   {% endfor %}
                   </tbody>

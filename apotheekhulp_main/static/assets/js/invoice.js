@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButton_assistent');
+    if(buttonCreateInvoiceAssistent){
 
     buttonCreateInvoiceAssistent.addEventListener('click', function () {
         // Get all checkboxes with the name 'select_event'
@@ -111,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('Factuur wordt aangemaakt.'); // Placeholder for actual action
         }
     });
-
+}
     // Handle click events for the table rows to show the detail modal
     const table = document.getElementById('tbl_nog_te_factureren_door_assistent_obj');
     if (table) {

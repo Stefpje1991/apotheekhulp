@@ -87,7 +87,7 @@
             </div>
             <!-- Account -->
             <div class="card-body">
-               {% if nog_te_factureren_dagen.exists %}
+               {% if items_nog_te_factureren_door_assistent %}
                <table id="tbl_overzicht_niet_gefactureerde_dagen" class="table table-hover">
                   <thead>
                      <tr>
@@ -97,10 +97,11 @@
                         <th class="text-center">Pauzeduur in minuten</th>
                         <th class="text-center">Naam Assistent</th>
                         <th class="text-center">Naam Apotheek</th>
+                        <th class="text-center">Bedrag</th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
-                  {% for event in nog_te_factureren_dagen %}
+                  {% for event in items_nog_te_factureren_door_assistent %}
                      <tr>
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
@@ -108,6 +109,7 @@
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                        <td align="center">€ {{ event.totaalbedragWerk }}</td>
                      </tr>
                   {% endfor %}
                   </tbody>
@@ -119,12 +121,12 @@
          </div>
          <div class="card mb-4">
             <div class="card-header position-relative">
-               <h5 class="mb-0">Overzicht van gefactureerde dagen door assistent</h5>
+               <h5 class="mb-0">Overzicht van nog te factureren dagen aan apotheek</h5>
                <!-- Button positioned at the top right of the card-header -->
             </div>
             <!-- Account -->
             <div class="card-body">
-               {% if nog_te_factureren_dagen_aan_apotheek.exists %}
+               {% if items_nog_te_factureren_aan_apotheek %}
                <table id="tbl_overzicht_gewerkte_dagen" class="table table-hover">
                   <thead>
                      <tr>
@@ -134,10 +136,11 @@
                         <th class="text-center">Pauzeduur in minuten</th>
                         <th class="text-center">Naam Assistent</th>
                         <th class="text-center">Naam Apotheek</th>
+                        <th class="text-center">Bedrag</th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
-                  {% for event in nog_te_factureren_dagen_aan_apotheek %}
+                  {% for event in items_nog_te_factureren_aan_apotheek %}
                      <tr>
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
@@ -145,12 +148,13 @@
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                        <td align="center">€ {{ event.totaalbedragWerk }}</td>
                      </tr>
                   {% endfor %}
                   </tbody>
                </table>
                {% else %}
-               <p align="center">Geen gefactureerde dagen gevonden</p>
+               <p align="center">Geen nog te factureren dagen gevonden</p>
                {% endif %}
             </div>
          </div>

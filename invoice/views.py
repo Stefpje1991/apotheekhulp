@@ -144,11 +144,65 @@ def update_event_status_assistent(request, event_id):
 def overview_events_assistent(request):
     assistent = get_object_or_404(Assistent, user=request.user)
     te_bekijken_events_door_assistent = Event.objects.filter(assistent=assistent, status='noaction')
-    nog_te_factureren_events = Event.objects.filter(assistent=assistent, invoiced=False, status='Accepted',
+    nog_te_factureren_events_door_assistent = Event.objects.filter(assistent=assistent, invoiced=False, status='Accepted',
                                                     status_apotheek='Accepted')
+
+    items_nog_te_factureren_door_assistent = []
+    for item in nog_te_factureren_events_door_assistent:
+        id = item.id
+        start_time = item.start_time
+        end_time = item.end_time
+        aanwezige_tijd = end_time - start_time
+        pauzeduur = timedelta(minutes=item.pauzeduur)
+        gewerkte_uren = (end_time - start_time - pauzeduur).total_seconds() / 3600
+        gewerkte_uren_modal = end_time - start_time - pauzeduur
+        gewerkte_uren = round(gewerkte_uren, 4)
+        assistent = item.assistent
+        apotheek = item.apotheek
+        try:
+            link = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent, apotheek=apotheek)
+            uurtariefAssistent = float(link.uurtariefAssistent)
+            afstandInKilometers = link.afstandInKilometers
+            uurtariefApotheek = float(link.uurtariefApotheek)
+            kilometervergoeding = link.kilometervergoeding
+            bedragFietsvergoeding = 0.00
+            if kilometervergoeding:
+                bedragFietsvergoeding = round(afstandInKilometers * 0.43, 2)
+            totaalbedragZonderFietsvergoeding = round(gewerkte_uren * uurtariefAssistent, 2)
+            totaalbedragWerk = round(round(gewerkte_uren * uurtariefAssistent, 2) + bedragFietsvergoeding, 2)
+        except:
+            link = ""
+            uurtariefAssistent = 0
+            uurtariefApotheek = 0
+            kilometervergoeding = False
+            afstandInKilometers = 0
+            totaalbedragWerk = 0
+            bedragFietsvergoeding = 0.00
+            totaalbedragZonderFietsvergoeding = 0.00
+
+        item_to_add = {
+            'id': id,
+            'start_time': start_time,
+            'end_time': end_time,
+            'pauzeduur': pauzeduur,
+            'assistent': assistent,
+            'apotheek': apotheek,
+            'link': link,
+            'uurtariefAssistent': uurtariefAssistent,
+            'uurtariefApotheek': uurtariefApotheek,
+            'afstandinKilometers': afstandInKilometers,
+            'kilometervergoeding': kilometervergoeding,
+            'totaalbedragWerk': totaalbedragWerk,
+            'bedragFietsvergoeding': bedragFietsvergoeding,
+            'aanwezige_tijd': aanwezige_tijd,
+            'gewerkte_tijd': gewerkte_uren_modal,
+            'totaalbedrag_zonder_fietsvergoeding': totaalbedragZonderFietsvergoeding
+        }
+
+        items_nog_te_factureren_door_assistent.append(item_to_add)
     context = {
         'te_bekijken_events_door_assistent': te_bekijken_events_door_assistent,
-        'nog_te_factureren_events': nog_te_factureren_events
+        'nog_te_factureren_events': items_nog_te_factureren_door_assistent
     }
     return render(request, 'invoice/overview_events_assistent.html', context)
 
@@ -176,56 +230,99 @@ def overview_events_admin(request, user_id):
     events_status_no_action = None
     nog_te_factureren_dagen_aan_apotheek = None
     gewerkte_dagen_te_accepteren_door_apotheek = None
-    nog_te_factureren_dagen = None
     gefactureerde_dagen_aan_apotheek = None
     betaalde_dagen_door_apotheek = None
+    items_nog_te_factureren_door_assistent = []
+    items_nog_te_factureren_aan_apotheek = []
+
+    # Helper function to calculate invoice items
+    def calculate_invoice_item(item, uurtarief, is_apotheek=False):
+        start_time = item.start_time
+        end_time = item.end_time
+        aanwezige_tijd = end_time - start_time
+        pauzeduur = timedelta(minutes=item.pauzeduur)
+        gewerkte_uren = (end_time - start_time - pauzeduur).total_seconds() / 3600
+        gewerkte_uren_modal = end_time - start_time - pauzeduur
+        gewerkte_uren = round(gewerkte_uren, 4)
+
+        try:
+            link = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent, apotheek=item.apotheek)
+            afstandInKilometers = link.afstandInKilometers
+            kilometervergoeding = link.kilometervergoeding
+            bedragFietsvergoeding = round(afstandInKilometers * 0.43, 2) if kilometervergoeding else 0.00
+            totaalbedragZonderFietsvergoeding = round(gewerkte_uren * float(uurtarief), 2)
+            totaalbedragWerk = round(totaalbedragZonderFietsvergoeding + bedragFietsvergoeding, 2)
+        except:
+            link, afstandInKilometers, kilometervergoeding = "", 0, False
+            totaalbedragWerk, bedragFietsvergoeding, totaalbedragZonderFietsvergoeding = 0, 0.00, 0.00
+
+        return {
+            'id': item.id,
+            'start_time': start_time,
+            'end_time': end_time,
+            'pauzeduur': pauzeduur,
+            'assistent': item.assistent,
+            'apotheek': item.apotheek,
+            'link': link,
+            'uurtarief': uurtarief,
+            'afstandinKilometers': afstandInKilometers,
+            'kilometervergoeding': kilometervergoeding,
+            'totaalbedragWerk': totaalbedragWerk,
+            'bedragFietsvergoeding': bedragFietsvergoeding,
+            'aanwezige_tijd': aanwezige_tijd,
+            'gewerkte_tijd': gewerkte_uren_modal,
+            'totaalbedrag_zonder_fietsvergoeding': totaalbedragZonderFietsvergoeding
+        }
 
     # Determine role and get the appropriate instance
-    if gebruiker.role == 1:
+    if gebruiker.role == 1:  # Assistent
         assistent = get_object_or_404(Assistent, user=gebruiker)
         assistent_id = assistent.id
+
+        # Fetch relevant events
         events_status_no_action = Event.objects.filter(assistent=assistent, status='noaction').order_by('start_time')
-        gewerkte_dagen_te_accepteren_door_apotheek = Event.objects.filter(assistent=assistent,
-                                                                          status='Accepted').exclude(
-            status_apotheek='Accepted').order_by('start_time')
-        nog_te_factureren_dagen_aan_apotheek = Event.objects.filter(assistent=assistent, status='Accepted',
-                                                                    status_apotheek='Accepted', invoiced=True,
-                                                                    invoiced_to_apotheek=False).order_by('start_time')
-        nog_te_factureren_dagen = Event.objects.filter(assistent=assistent, status='Accepted',
-                                                       status_apotheek='Accepted', invoiced=False).order_by(
-            'start_time')
-        gefactureerde_dagen_aan_apotheek = Event.objects.filter(assistent=assistent, status='Accepted',
-                                                                status_apotheek='Accepted', invoiced=True,
-                                                                invoiced_to_apotheek=True,
-                                                                paid_by_apotheek=False).order_by('start_time')
+        gewerkte_dagen_te_accepteren_door_apotheek = Event.objects.filter(assistent=assistent, status='Accepted').exclude(status_apotheek='Accepted').order_by('start_time')
+        nog_te_factureren_dagen = Event.objects.filter(assistent=assistent, status='Accepted', status_apotheek='Accepted', invoiced=False).order_by('start_time')
+        nog_te_factureren_dagen_aan_apotheek = Event.objects.filter(assistent=assistent, status='Accepted', status_apotheek='Accepted', invoiced=True, invoiced_to_apotheek=False).order_by('start_time')
+        gefactureerde_dagen_aan_apotheek = Event.objects.filter(assistent=assistent, status='Accepted', status_apotheek='Accepted', invoiced=True, invoiced_to_apotheek=True, paid_by_apotheek=False).order_by('start_time')
+        betaalde_dagen_door_apotheek = Event.objects.filter(assistent=assistent, status='Accepted', status_apotheek='Accepted', invoiced=True, invoiced_to_apotheek=True, paid_by_apotheek=True).order_by('start_time')
 
-        betaalde_dagen_door_apotheek = Event.objects.filter(assistent=assistent, status='Accepted',
-                                                            status_apotheek='Accepted', invoiced=True,
-                                                            invoiced_to_apotheek=True, paid_by_apotheek=True).order_by(
-            'start_time')
+        # Populate items_nog_te_factureren_door_assistent
+        for item in nog_te_factureren_dagen:
+            uurtariefAssistent = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent, apotheek=item.apotheek).uurtariefAssistent
+            item_to_add = calculate_invoice_item(item, uurtariefAssistent)
+            items_nog_te_factureren_door_assistent.append(item_to_add)
 
-    elif gebruiker.role == 2:
+        # Populate items_nog_te_factureren_aan_apotheek
+        for item in nog_te_factureren_dagen_aan_apotheek:
+            uurtariefApotheek = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent, apotheek=item.apotheek).uurtariefApotheek
+            item_to_add = calculate_invoice_item(item, uurtariefApotheek, is_apotheek=True)
+            items_nog_te_factureren_aan_apotheek.append(item_to_add)
+
+    elif gebruiker.role == 2:  # Apotheek
         apotheek = get_object_or_404(Apotheek, user=gebruiker)
         apotheek_id = apotheek.id
+
+        # Fetch relevant events
         events_status_no_action = Event.objects.filter(apotheek=apotheek, status='noaction').order_by('start_time')
-        nog_te_factureren_dagen_aan_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted',
-                                                                    status_apotheek='Accepted', invoiced=True,
-                                                                    invoiced_to_apotheek=False).order_by('start_time')
-        gewerkte_dagen_te_accepteren_door_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted').exclude(
-            status_apotheek='Accepted').order_by('start_time')
-        nog_te_factureren_dagen = Event.objects.filter(apotheek=apotheek, status='Accepted',
-                                                       status_apotheek='Accepted', invoiced=False).order_by(
-            'start_time')
-        gefactureerde_dagen_aan_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted',
-                                                                status_apotheek='Accepted', invoiced=True,
-                                                                invoiced_to_apotheek=True,
-                                                                paid_by_apotheek=True).order_by('start_time')
+        gewerkte_dagen_te_accepteren_door_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted').exclude(status_apotheek='Accepted').order_by('start_time')
+        nog_te_factureren_dagen = Event.objects.filter(apotheek=apotheek, status='Accepted', status_apotheek='Accepted', invoiced=False).order_by('start_time')
+        nog_te_factureren_dagen_aan_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted', status_apotheek='Accepted', invoiced=True, invoiced_to_apotheek=False).order_by('start_time')
+        gefactureerde_dagen_aan_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted', status_apotheek='Accepted', invoiced=True, invoiced_to_apotheek=True, paid_by_apotheek=False).order_by('start_time')
+        betaalde_dagen_door_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted', status_apotheek='Accepted', invoiced=True, invoiced_to_apotheek=True, paid_by_apotheek=True).order_by('start_time')
 
-        betaalde_dagen_door_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted',
-                                                            status_apotheek='Accepted', invoiced=True,
-                                                            invoiced_to_apotheek=True, paid_by_apotheek=True).order_by(
-            'start_time')
+        # Populate items_nog_te_factureren_door_assistent
+        for item in nog_te_factureren_dagen:
+            uurtariefAssistent = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent, apotheek=apotheek).uurtariefAssistent
+            item_to_add = calculate_invoice_item(item, uurtariefAssistent)
+            items_nog_te_factureren_door_assistent.append(item_to_add)
 
+        # Populate items_nog_te_factureren_aan_apotheek
+        for item in nog_te_factureren_dagen_aan_apotheek:
+            uurtariefApotheek = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent, apotheek=apotheek).uurtariefApotheek
+            item_to_add = calculate_invoice_item(item, uurtariefApotheek, is_apotheek=True)
+            items_nog_te_factureren_aan_apotheek.append(item_to_add)
+    # Prepare context
     context = {
         'user_id': user_id,
         'gebruiker': gebruiker,
@@ -236,13 +333,14 @@ def overview_events_admin(request, user_id):
         'events_status_no_action': events_status_no_action,
         'gewerkte_dagen_te_accepteren_door_apotheek': gewerkte_dagen_te_accepteren_door_apotheek,
         'nog_te_factureren_dagen_aan_apotheek': nog_te_factureren_dagen_aan_apotheek,
-        'nog_te_factureren_dagen': nog_te_factureren_dagen,
+        'items_nog_te_factureren_door_assistent': items_nog_te_factureren_door_assistent,
+        'items_nog_te_factureren_aan_apotheek': items_nog_te_factureren_aan_apotheek,
         'betaalde_dagen_door_apotheek': betaalde_dagen_door_apotheek,
         'gefactureerde_dagen_aan_apotheek': gefactureerde_dagen_aan_apotheek
-
     }
 
     return render(request, 'invoice/admin/overview_events_per_gebruiker.html', context)
+
 
 
 @role_required(3)
