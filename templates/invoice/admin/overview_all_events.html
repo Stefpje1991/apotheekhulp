@@ -307,17 +307,17 @@
                   <tbody class="table-border-bottom-0">
                      {% for event in paginator_nog_te_factureren_door_assistent_obj %}
                      <tr data-id="{{ event.id }}"
-                         data-link="{{ event.link }}"
-                         data-uurtarief-assistent="{{ event.uurtariefAssistent }}"
-                         data-uurtarief-apotheek="{{ event.uurtariefApotheek }}"
-                         data-afstand-in-kilometers="{{ event.afstandinKilometers }}"
-                         data-kilometervergoeding="{{ event.kilometervergoeding }}"
-                         data-totaalbedrag-werk="{{ event.totaalbedragWerk }}"
-                         data-bedrag-fietsvergoeding="{{ event.bedragFietsvergoeding }}"
-                         data-aanwezige-tijd="{{ event.aanwezige_tijd }}"
-                         data-gewerkte-tijd="{{ event.gewerkte_tijd }}"
-                         data-totaalbedrag-zonder-fietsvergoeding="{{ event.totaalbedrag_zonder_fietsvergoeding }}"
-                         data-totaalbedrag="{{ event.totaalbedragWerk }}">
+                        data-link="{{ event.link }}"
+                        data-uurtarief-assistent="{{ event.uurtariefAssistent }}"
+                        data-uurtarief-apotheek="{{ event.uurtariefApotheek }}"
+                        data-afstand-in-kilometers="{{ event.afstandinKilometers }}"
+                        data-kilometervergoeding="{{ event.kilometervergoeding }}"
+                        data-totaalbedrag-werk="{{ event.totaalbedragWerk }}"
+                        data-bedrag-fietsvergoeding="{{ event.bedragFietsvergoeding }}"
+                        data-aanwezige-tijd="{{ event.aanwezige_tijd }}"
+                        data-gewerkte-tijd="{{ event.gewerkte_tijd }}"
+                        data-totaalbedrag-zonder-fietsvergoeding="{{ event.totaalbedrag_zonder_fietsvergoeding }}"
+                        data-totaalbedrag="{{ event.totaalbedragWerk }}">
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
                         <td align="center">{{ event.end_time|time:"H:i" }}</td>
@@ -567,50 +567,47 @@
       {% include 'includes/alerts.html' %}
    </div>
 </div>
-
 <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
-               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editEventForm" method="POST">
-               {% csrf_token %}
-               <input type="hidden" id="edit-event-id" name="event_id" />
-               <div class="modal-body">
-                  <input type="hidden" id="modal-edit-event-date" name="date" />
-                  <div class="mb-3">
-                     <label for="start-edit-time" class="form-label">Beginuur</label>
-                     <input type="time" class="form-control" id="start-edit-time" name="startTime" />
-                  </div>
-                  <div class="mb-3">
-                     <label for="end-edit-time" class="form-label">Einduur</label>
-                     <input type="time" class="form-control" id="end-edit-time" name="endTime" />
-                  </div>
-                  <div class="mb-3">
-                     <label for="edit_pauzeduur" class="form-label">Pauzeduur in minuten</label>
-                     <input type="number" class="form-control" id="edit_pauzeduur" name="pauzeDuur" />
-                  </div>
-                  <div class="mb-3">
-                     <label for="edit_assistent" class="form-label">Naam van assistent</label>
-                     <select class="form-select" id="edit_assistent" name="assistent"></select>
-                  </div>
-                  <div class="mb-3">
-                     <label for="edit_apotheek" class="form-label">Naam van apotheek</label>
-                     <select class="form-select" id="edit_apotheek" name="apotheek"></select>
-                  </div>
-               </div>
-               <div class="modal-footer">
-                  <button type="submit" class="btn btn-primary">Opslaan</button>
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
-               </div>
-            </form>
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
+         <form id="editEventForm" method="POST">
+            {% csrf_token %}
+            <input type="hidden" id="edit-event-id" name="event_id" />
+            <div class="modal-body">
+               <input type="hidden" id="modal-edit-event-date" name="date" />
+               <div class="mb-3">
+                  <label for="start-edit-time" class="form-label">Beginuur</label>
+                  <input type="time" class="form-control" id="start-edit-time" name="startTime" />
+               </div>
+               <div class="mb-3">
+                  <label for="end-edit-time" class="form-label">Einduur</label>
+                  <input type="time" class="form-control" id="end-edit-time" name="endTime" />
+               </div>
+               <div class="mb-3">
+                  <label for="edit_pauzeduur" class="form-label">Pauzeduur in minuten</label>
+                  <input type="number" class="form-control" id="edit_pauzeduur" name="pauzeDuur" />
+               </div>
+               <div class="mb-3">
+                  <label for="edit_assistent" class="form-label">Naam van assistent</label>
+                  <select class="form-select" id="edit_assistent" name="assistent"></select>
+               </div>
+               <div class="mb-3">
+                  <label for="edit_apotheek" class="form-label">Naam van apotheek</label>
+                  <select class="form-select" id="edit_apotheek" name="apotheek"></select>
+               </div>
+            </div>
+            <div class="modal-footer">
+               <button type="submit" class="btn btn-primary">Opslaan</button>
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+            </div>
+         </form>
       </div>
    </div>
-
-
+</div>
 <div class="modal fade" id="detailFactuurOpenstaandAssistent" tabindex="-1" aria-labelledby="detailFactuurOpenstaandAssistent" aria-hidden="true">
    <div class="modal-dialog">
       <div class="modal-content">

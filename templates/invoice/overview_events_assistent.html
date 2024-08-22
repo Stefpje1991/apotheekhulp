@@ -23,7 +23,7 @@
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
-                  {% for event in te_bekijken_events_door_assistent %}
+                     {% for event in te_bekijken_events_door_assistent %}
                      <tr>
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
@@ -37,7 +37,7 @@
                            <span class="badge bg-danger" style="cursor: pointer;" onclick="updateStatusAssistent('{{ event.id }}', 'Declined')">Weigeren</span>
                         </td>
                      </tr>
-                  {% endfor %}
+                     {% endfor %}
                   </tbody>
                </table>
                {% else %}
@@ -47,7 +47,6 @@
          </div>
       </div>
    </div>
-
    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Assistent /</span> Overzicht Nog Te Factureren</h4>
    <div class="row">
       <div class="col-md-12">
@@ -57,7 +56,7 @@
                {% if nog_te_factureren_events %}
                <div class="d-flex justify-content-end mb-3">
                   <button type="button" class="btn btn-warning" id="createInvoiceButton_assistent">
-                     Maak Nieuwe Factuur
+                  Maak Nieuwe Factuur
                   </button>
                </div>
                <table id="tbl_overzicht_nog_te_factureren_assistent" class="table table-hover">
@@ -73,10 +72,10 @@
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
-                  {% for event in nog_te_factureren_events %}
+                     {% for event in nog_te_factureren_events %}
                      <tr>
                         <td align="center">
-                           <input type="checkbox" name="select_event" value="{{ event.id }}">
+                           <input type="checkbox" class="form-check-input" name="select_event" value="{{ event.id }}">
                         </td>
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
@@ -85,13 +84,100 @@
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
                         <td align="center">€ {{ event.totaalbedragWerk }}</td>
                      </tr>
-                  {% endfor %}
+                     {% endfor %}
                   </tbody>
                </table>
                {% else %}
                <p align="center">Geen prestaties om te factureren gevonden</p>
                {% endif %}
             </div>
+         </div>
+      </div>
+   </div>
+</div>
+<div class="row">
+   <div class="col-lg-12 col-md-12 col-lg-12 col-sm-12 col-xs-12">
+      {% include 'includes/alerts.html' %}
+   </div>
+</div>
+<!-- Create Invoice Modal -->
+<div class="modal fade" id="createInvoiceModal" tabindex="-1" aria-labelledby="createInvoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createInvoiceModalLabel">Maak een nieuwe factuur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="invoiceForm" method="POST" action="{% url 'create_invoice' %}">
+               {% csrf_token %}
+                <div class="modal-body">
+                    <div id="selected-events-list"></div>
+                    <div class="mb-3">
+                        <label for="factuurnummer" class="form-label">Factuurnummer</label>
+                        <input type="text" class="form-control" id="factuurnummer" name="factuurnummer" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="factuurdatum" class="form-label">Factuurdatum</label>
+                        <input type="date" class="form-control" id="factuurdatum" name="factuurdatum" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+                    <button type="button" class="btn btn-primary" id="saveInvoiceButton">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Foutmelding</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Error message will be set by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Succes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Success message will be set by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="noSelectionModal" tabindex="-1" aria-labelledby="noSelectionModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="noSelectionModalLabel">Selecteer minstens 1 event</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <p>Selecteer minstens één item om een factuur aan te maken.</p>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
          </div>
       </div>
    </div>

@@ -89,30 +89,107 @@ document.addEventListener('DOMContentLoaded', function () {
         detailModal.show();
     }
 
-    const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButton_assistent');
-    if(buttonCreateInvoiceAssistent){
+const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButton_assistent');
+    const createInvoiceModal = new bootstrap.Modal(document.getElementById('createInvoiceModal'));
+    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
 
-    buttonCreateInvoiceAssistent.addEventListener('click', function () {
-        // Get all checkboxes with the name 'select_event'
-        const checkboxes = document.querySelectorAll('input[name="select_event"]');
-        let isSelected = false;
+    if (buttonCreateInvoiceAssistent) {
+        buttonCreateInvoiceAssistent.addEventListener('click', function () {
+            // Get all checkboxes with the name 'select_event'
+            const checkboxes = document.querySelectorAll('input[name="select_event"]');
+            const selectedEvents = Array.from(checkboxes).filter(checkbox => checkbox.checked);
 
-        // Check if any checkbox is selected
-        checkboxes.forEach((checkbox) => {
-            if (checkbox.checked) {
-                isSelected = true;
+            // If no checkbox is selected, show the error modal
+            if (selectedEvents.length === 0) {
+                document.getElementById('errorModalLabel').textContent = 'Selecteer minstens één item om een factuur aan te maken.';
+                errorModal.show();
+            } else {
+                // Populate the create invoice modal with selected events
+                const eventsList = document.getElementById('selected-events-list');
+                eventsList.innerHTML = ''; // Clear previous content
+
+                selectedEvents.forEach(checkbox => {
+                    const eventId = checkbox.value;
+                    const eventRow = document.querySelector(`input[name="select_event"][value="${eventId}"]`).closest('tr');
+                    const cells = eventRow.querySelectorAll('td');
+                    const eventInfo = `
+                        <p>
+                            Datum: ${cells[0].textContent.trim()},
+                            Startuur: ${cells[1].textContent.trim()},
+                            Einduur: ${cells[2].textContent.trim()},
+                            Pauzeduur: ${cells[3].textContent.trim()},
+                            Naam Apotheek: ${cells[4].textContent.trim()},
+                            Bedrag: ${cells[6].textContent.trim()}
+                        </p>
+                    `;
+                    eventsList.innerHTML += eventInfo;
+                });
+
+                createInvoiceModal.show();
             }
         });
+    }
 
-        // If no checkbox is selected, alert the user
-        if (!isSelected) {
-            alert('Selecteer minstens één item om een factuur aan te maken.');
-        } else {
-            // Proceed with your action, e.g., form submission or redirection
-            alert('Factuur wordt aangemaakt.'); // Placeholder for actual action
-        }
+    document.getElementById('saveInvoiceButton').addEventListener('click', function () {
+        submitInvoice();
     });
-}
+
+    function submitInvoice() {
+        const form = document.getElementById('invoiceForm');
+        const formData = new FormData(form);
+
+        // Collect selected events and their corresponding totals from the modal
+        const selectedEvents = Array.from(document.querySelectorAll('input[name="select_event"]:checked')).map(checkbox => ({
+            id: checkbox.value,
+            totaalbedragWerk: checkbox.closest('tr').querySelector('td:nth-child(7)').textContent.trim().replace('€ ', '') // Adjust if necessary
+        }));
+
+        if (formData.get('factuurnummer') && formData.get('factuurdatum') && selectedEvents.length > 0) {
+            selectedEvents.forEach((event, index) => {
+                formData.append(`selected_events[${index}][id]`, event.id);
+                formData.append(`selected_events[${index}][totaalbedragWerk]`, event.totaalbedragWerk);
+            });
+
+            fetch('/invoice/create_invoice/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Set a flag to show the success modal after reload
+                    localStorage.setItem('invoiceCreationStatus', 'success');
+                    window.location.reload(); // Reload the page to see the changes
+                } else {
+                    document.getElementById('errorModalLabel').textContent = data.message;
+                    errorModal.show(); // Display the error message returned by the server
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('errorModalLabel').textContent = "Er is een fout opgetreden bij het verzenden van de aanvraag.";
+                errorModal.show(); // Display the error message returned by the server
+            });
+        } else {
+            document.getElementById('errorModalLabel').textContent = "Vul alstublieft alle velden in en selecteer minstens één event.";
+            errorModal.show(); // Display the error message returned by the server
+        }
+    }
+
+    // Check localStorage for the flag and show the success modal if necessary
+    const invoiceCreationStatus = localStorage.getItem('invoiceCreationStatus');
+    if (invoiceCreationStatus === 'success') {
+        localStorage.removeItem('invoiceCreationStatus');
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        document.getElementById('successModalLabel').textContent = "Factuur werd succesvol aangemaakt.";
+        successModal.show();
+    }
+
+
+
     // Handle click events for the table rows to show the detail modal
     const table = document.getElementById('tbl_nog_te_factureren_door_assistent_obj');
     if (table) {
