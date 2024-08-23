@@ -89,9 +89,13 @@ document.addEventListener('DOMContentLoaded', function () {
         detailModal.show();
     }
 
+// Include SweetAlert2 library if not already included in your HTML
+// <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButton_assistent');
-    const createInvoiceModal = new bootstrap.Modal(document.getElementById('createInvoiceModal'));
-    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    const saveInvoiceButton = document.getElementById('saveInvoiceButton');
+    const createInvoiceModalElement = document.getElementById('createInvoiceModal');
+    const createInvoiceModal = new bootstrap.Modal(createInvoiceModalElement);
 
     if (buttonCreateInvoiceAssistent) {
         buttonCreateInvoiceAssistent.addEventListener('click', function () {
@@ -99,10 +103,13 @@ const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButto
             const checkboxes = document.querySelectorAll('input[name="select_event"]');
             const selectedEvents = Array.from(checkboxes).filter(checkbox => checkbox.checked);
 
-            // If no checkbox is selected, show the error modal
+            // If no checkbox is selected, show the error alert
             if (selectedEvents.length === 0) {
-                document.getElementById('errorModalLabel').textContent = 'Selecteer minstens één item om een factuur aan te maken.';
-                errorModal.show();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Geen selectie',
+                    text: 'Selecteer minstens één item om een factuur aan te maken.'
+                });
             } else {
                 // Populate the create invoice modal with selected events
                 const eventsList = document.getElementById('selected-events-list');
@@ -114,25 +121,30 @@ const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButto
                     const cells = eventRow.querySelectorAll('td');
                     const eventInfo = `
                         <p>
-                            Datum: ${cells[0].textContent.trim()},
-                            Startuur: ${cells[1].textContent.trim()},
-                            Einduur: ${cells[2].textContent.trim()},
-                            Pauzeduur: ${cells[3].textContent.trim()},
-                            Naam Apotheek: ${cells[4].textContent.trim()},
+                            Datum: ${cells[1].textContent.trim()}
+                        </p>
+                        <p>
+                            Naam Apotheek: ${cells[5].textContent.trim()}
+                        </p>
+                        <p>
                             Bedrag: ${cells[6].textContent.trim()}
                         </p>
+                        <hr>
                     `;
                     eventsList.innerHTML += eventInfo;
                 });
 
+                // Show the create invoice modal using Bootstrap
                 createInvoiceModal.show();
             }
         });
     }
 
-    document.getElementById('saveInvoiceButton').addEventListener('click', function () {
-        submitInvoice();
-    });
+    if (saveInvoiceButton) {
+        saveInvoiceButton.addEventListener('click', function () {
+            submitInvoice();
+        });
+    }
 
     function submitInvoice() {
         const form = document.getElementById('invoiceForm');
@@ -160,32 +172,53 @@ const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButto
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Set a flag to show the success modal after reload
-                    localStorage.setItem('invoiceCreationStatus', 'success');
+                    createInvoiceModal.hide();
+                    // Store success flag and download URL
+                    sessionStorage.setItem('invoiceCreationStatus', 'success');
+                    sessionStorage.setItem('downloadUrl', data.download_url); // Ensure this URL is included in the response
                     window.location.reload(); // Reload the page to see the changes
                 } else {
-                    document.getElementById('errorModalLabel').textContent = data.message;
-                    errorModal.show(); // Display the error message returned by the server
+                    createInvoiceModal.hide(); // Hide the modal
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Foutmelding',
+                        text: data.message
+                    });
                 }
             })
             .catch(error => {
+                createInvoiceModal.hide(); // Hide the modal
                 console.error('Error:', error);
-                document.getElementById('errorModalLabel').textContent = "Er is een fout opgetreden bij het verzenden van de aanvraag.";
-                errorModal.show(); // Display the error message returned by the server
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Foutmelding',
+                    text: 'Er is een fout opgetreden bij het verzenden van de aanvraag.'
+                });
             });
         } else {
-            document.getElementById('errorModalLabel').textContent = "Vul alstublieft alle velden in en selecteer minstens één event.";
-            errorModal.show(); // Display the error message returned by the server
+            createInvoiceModal.hide(); // Hide the modal
+            Swal.fire({
+                icon: 'warning',
+                title: 'Ongeldige Invoer',
+                text: 'Vul alstublieft alle velden in en selecteer minstens één event.'
+            });
         }
     }
 
-    // Check localStorage for the flag and show the success modal if necessary
-    const invoiceCreationStatus = localStorage.getItem('invoiceCreationStatus');
+    // Check sessionStorage for the flag and show the success alert if necessary
+    const invoiceCreationStatus = sessionStorage.getItem('invoiceCreationStatus');
+    const downloadUrl = sessionStorage.getItem('downloadUrl'); // Retrieve the download URL
+
     if (invoiceCreationStatus === 'success') {
-        localStorage.removeItem('invoiceCreationStatus');
-        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-        document.getElementById('successModalLabel').textContent = "Factuur werd succesvol aangemaakt.";
-        successModal.show();
+        sessionStorage.removeItem('invoiceCreationStatus'); // Remove the flag
+        sessionStorage.removeItem('downloadUrl'); // Clean up
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Succes',
+            text: 'Factuur werd succesvol aangemaakt.',
+            footer: downloadUrl ? `<a href="${downloadUrl}" target="_blank">Download de factuur</a>` : ''
+        });
     }
 
 

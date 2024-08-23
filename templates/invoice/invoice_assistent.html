@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ items.invoice.invoice_number }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header, .footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        .invoice-info, .events-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .invoice-info th, .invoice-info td, .events-table th, .events-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-info th, .events-table th {
+            background-color: #f2f2f2;
+        }
+        .invoice-info th {
+            width: 30%; /* Adjust width of header cells */
+        }
+        .invoice-info td {
+            width: 70%; /* Adjust width of data cells */
+        }
+        .total-row {
+            font-weight: bold;
+            text-align: right;
+        }
+        .total-label {
+            padding-right: 10px;
+        }
+        .total-value {
+            text-align: right;
+        }
+        .footer {
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Factuur</h1>
+        </div>
+
+        <!-- Invoice Information -->
+        <table class="invoice-info">
+            <tr>
+                <th>Factuurnummer:</th>
+                <td>{{ items.invoice.invoice_number }}</td>
+            </tr>
+            <tr>
+                <th>Factuurdatum:</th>
+                <td>{{ items.invoice_date }}</td>
+            </tr>
+        </table>
+
+        <!-- Events Table -->
+        <table class="events-table">
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Naam Apotheek</th>
+                    <th>Uurtarief</th>
+                    <th>Gewerkte uren</th>
+                    <th>Bedrag</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in items.events %}
+                <tr>
+                    <td>{{ event.start_time|date:"d/m/Y" }}</td>
+                    <td>{{ event.apotheek.apotheek_naamBedrijf }}</td>
+                    <td>€ {{ event.uurtariefAssistent }}</td>
+                    <td>{{ event.gewerkte_tijd }}</td>
+                    <td>€ {{ event.totaalbedrag_zonder_fietsvergoeding }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="4" class="total-label">Totaal excl. BTW</td>
+                    <td class="total-value">€ {{ items.totaalbedragFactuur }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="4" class="total-label">BTW</td>
+                    <td class="total-value">€ {{ items.btw }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="4" class="total-label">Totaal incl. BTW</td>
+                    <td class="total-value">€ {{ items.totaalbedragFactuurMetBtw }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Thank you for your business!</p>
+            <p>Company Address | Contact Information</p>
+        </div>
+    </div>
+</body>
+</html>

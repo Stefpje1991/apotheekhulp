@@ -33,6 +33,7 @@ class InvoiceOverview(models.Model):
     invoice_paid = models.BooleanField(default=False)
     invoice_paid_at = models.DateTimeField(null=True, blank=True)
     invoice_paid_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    invoice_pdf = models.FileField(upload_to='invoices/', null=True, blank=True)
 
     class Meta:
         unique_together = ('invoice_number', 'invoice_created_by')

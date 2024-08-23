@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     'calendar_app',
     'invoice',
+    'sweetify',
 ]
 
 MIDDLEWARE = [
@@ -148,3 +149,6 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Sweetify configuration
+SWEETIFY_SWEETALERT_LIBRARY = 'sweetalert2'
