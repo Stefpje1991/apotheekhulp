@@ -151,10 +151,11 @@ def update_event_status_assistent(request, event_id):
 def overview_events_assistent(request):
     assistent = get_object_or_404(Assistent, user=request.user)
     te_bekijken_events_door_assistent = Event.objects.filter(assistent=assistent, status='noaction')
+    te_bekijken_events_door_apotheek = Event.objects.filter(assistent=assistent, status='Accepted').exclude(status_apotheek='Accepted')
     nog_te_factureren_events_door_assistent = Event.objects.filter(assistent=assistent, invoiced=False,
                                                                    status='Accepted',
                                                                    status_apotheek='Accepted')
-
+    facturen_van_assistent = InvoiceOverview.objects.filter(invoice_created_by=assistent)
 
     items_nog_te_factureren_door_assistent = []
     for item in nog_te_factureren_events_door_assistent:
@@ -211,7 +212,9 @@ def overview_events_assistent(request):
         items_nog_te_factureren_door_assistent.append(item_to_add)
     context = {
         'te_bekijken_events_door_assistent': te_bekijken_events_door_assistent,
-        'nog_te_factureren_events': items_nog_te_factureren_door_assistent
+        'nog_te_factureren_events': items_nog_te_factureren_door_assistent,
+        'te_bekijken_events_door_apotheek': te_bekijken_events_door_apotheek,
+        'facturen_van_assistent': facturen_van_assistent
     }
     return render(request, 'invoice/overview_events_assistent.html', context)
 
@@ -647,7 +650,8 @@ def create_invoice(request):
                 invoice_number=factuurnummer,
                 invoice_date=factuurdatum,
                 invoice_created_by=assistent,
-                invoice_amount=sum(float(total) for total in selected_event_totals)
+                invoice_amount=round(sum(float(total) for total in selected_event_totals), 2),
+                invoice_btw=round(sum(float(total) for total in selected_event_totals) * 0.21, 2),
             )
 
             events = []
@@ -740,7 +744,7 @@ def create_invoice(request):
                 return JsonResponse({'status': 'error', 'message': 'Error generating PDF'})
 
             # Save the PDF to the model
-                # Generate filename with timestamp
+            # Generate filename with timestamp
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             pdf_filename = f'invoice_{timestamp}_{invoice.invoice_number}.pdf'
             invoice.invoice_pdf.save(pdf_filename, ContentFile(pdf_content))
@@ -750,8 +754,6 @@ def create_invoice(request):
             return JsonResponse({'status': 'success', 'pdf_url': download_url, 'download_url': download_url})
 
         except IntegrityError:
-            sweetify.error(request, 'Error',
-                           text='Factuurnummer bestaat al voor deze assistent. Kies een ander nummer.')
             return JsonResponse(
                 {'status': 'error', 'message': 'Factuurnummer bestaat al voor deze assistent. Kies een ander nummer.'})
 

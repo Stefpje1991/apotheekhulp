@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container-xxl flex-grow-1 container-p-y">
-   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Assistent /</span> Overzicht Openstaande Prestaties</h4>
+   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Assistent /</span> Openstaande Prestaties</h4>
    <div class="row">
       <div class="col-md-12">
          <div class="card mb-4">
@@ -47,7 +47,43 @@
          </div>
       </div>
    </div>
-   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Assistent /</span> Overzicht Nog Te Factureren</h4>
+   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Assistent /</span> Prestaties goed te keuren door apotheek</h4>
+   <div class="row">
+      <div class="col-md-12">
+         <div class="card mb-4">
+            <!-- Account -->
+            <div class="card-body">
+               {% if te_bekijken_events_door_apotheek.exists %}
+               <table id="tbl_overzicht_prestaties_assistent_goed_te_keuren_door_apotheek" class="table table-hover">
+                  <thead>
+                     <tr>
+                        <th class="text-center">Datum</th>
+                        <th class="text-center">Startuur</th>
+                        <th class="text-center">Einduur</th>
+                        <th class="text-center" style="width: 5%">Pauzeduur in minuten</th>
+                        <th class="text-center">Naam Apotheek</th>
+                     </tr>
+                  </thead>
+                  <tbody class="table-border-bottom-0">
+                     {% for event in te_bekijken_events_door_apotheek %}
+                     <tr>
+                        <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
+                        <td align="center">{{ event.start_time|time:"H:i" }}</td>
+                        <td align="center">{{ event.end_time|time:"H:i" }}</td>
+                        <td align="center">{{ event.pauzeduur }}</td>
+                        <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+               {% else %}
+               <p align="center">Geen goed te keuren events gevonden</p>
+               {% endif %}
+            </div>
+         </div>
+      </div>
+   </div>
+   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Assistent /</span> Te Factureren</h4>
    <div class="row">
       <div class="col-md-12">
          <div class="card mb-4">
@@ -89,6 +125,48 @@
                </table>
                {% else %}
                <p align="center">Geen prestaties om te factureren gevonden</p>
+               {% endif %}
+            </div>
+         </div>
+      </div>
+   </div>
+    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Assistent /</span> Facturen</h4>
+   <div class="row">
+      <div class="col-md-12">
+         <div class="card mb-4">
+            <!-- Account -->
+            <div class="card-body">
+               {% if facturen_van_assistent.exists %}
+               <table id="tbl_overzicht_gefactureerde_events_door_assistent" class="table table-hover">
+                  <thead>
+                     <tr>
+                        <th class="text-center">Factuurnummer</th>
+                        <th class="text-center">Factuurdatum</th>
+                        <th class="text-center">Bedrag</th>
+                        <th class="text-center">BTW</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Download Factuur</th>
+                     </tr>
+                  </thead>
+                  <tbody class="table-border-bottom-0">
+                     {% for factuur in facturen_van_assistent %}
+                     <tr>
+                        <td align="center">{{ factuur.invoice_number }}</td>
+                        <td align="center">{{ factuur.invoice_date|date:"d/m/Y" }}</td>
+                        <td align="center">€ {{ factuur.invoice_amount }}</td>
+                        <td align="center">€ {{ factuur.invoice_btw }}</td>
+                        {% if factuur.invoice_paid %}
+                        <td align="center"><span class="badge text-bg-success">Betaald</span></td>
+                        {% else %}
+                        <td align="center"><span class="badge text-bg-warning">Te Betalen</span></td>
+                        {% endif %}
+                        <td align="center"><a href="{{ factuur.invoice_pdf.url }}" download><i class="fas fa-download"></i></a></td>
+                     </tr>
+                     {% endfor %}
+                  </tbody>
+               </table>
+               {% else %}
+               <p align="center">Geen Facturen Teruggevonden</p>
                {% endif %}
             </div>
          </div>

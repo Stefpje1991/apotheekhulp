@@ -63,7 +63,7 @@ class AssistentForm(forms.ModelForm):
     class Meta:
         model = Assistent
         fields = ['assistent_btwNummer', 'assistent_btwPlichtig', 'assistent_naamBedrijf', 'assistent_straatBedrijf',
-                  'assistent_huisnummerBedrijf', 'assistent_postcodeBedrijf', 'assistent_stadBedrijf']
+                  'assistent_huisnummerBedrijf', 'assistent_postcodeBedrijf', 'assistent_stadBedrijf', 'assistent_rekeningnummer']
         labels = {
             'assistent_btwNummer': 'BTW Nummer',
             'assistent_btwPlichtig': 'BTW Plichtig',
@@ -72,6 +72,7 @@ class AssistentForm(forms.ModelForm):
             'assistent_huisnummerBedrijf': 'Huisnummer Bedrijf',
             'assistent_postcodeBedrijf': 'Postcode Bedrijf',
             'assistent_stadBedrijf': 'Stad Bedrijf',
+            'assistent_rekeningnummer': 'Rekeningnummer'
         }
 
 

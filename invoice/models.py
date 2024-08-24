@@ -30,6 +30,7 @@ class InvoiceOverview(models.Model):
     invoice_created_by = models.ForeignKey(Assistent, on_delete=models.CASCADE)
     invoice_created_at = models.DateTimeField(auto_now_add=True)
     invoice_amount = models.FloatField()
+    invoice_btw = models.FloatField()
     invoice_paid = models.BooleanField(default=False)
     invoice_paid_at = models.DateTimeField(null=True, blank=True)
     invoice_paid_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Invoice {{ items.invoice.invoice_number }}">
     <title>Invoice {{ items.invoice.invoice_number }}</title>
     <style>
         body {
@@ -23,7 +24,7 @@
 
         .container {
             width: 100%;
-            max-width: 900px; /* Increased max-width to accommodate side-by-side sections */
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -35,7 +36,6 @@
         }
 
         .table-bordered th, .table-bordered td {
-            border: none;
             padding: 8px;
         }
 
@@ -43,19 +43,30 @@
             background-color: #d4edda;
             color: #155724;
             padding: 10px;
+            text-align: center;
         }
 
         .table-bordered tbody td {
             text-align: center;
         }
 
+        .table-bordered td, .table-bordered th {
+            border-bottom: 1px solid #c3e6cb; /* Horizontal border */
+        }
+
+        .table-bordered tr td:first-child,
+        .table-bordered tr th:first-child {
+            border-left: none; /* Remove left border */
+        }
+
+        .table-bordered tr td:last-child,
+        .table-bordered tr th:last-child {
+            border-right: none; /* Remove right border */
+        }
+
         .table tfoot td {
             border: none;
             padding: 8px;
-            text-align: right;
-        }
-
-        .table tfoot td:last-child {
             text-align: right;
         }
 
@@ -91,14 +102,14 @@
         .details-container {
             display: flex;
             justify-content: space-between;
-            gap: 20px; /* Space between the sections */
+            gap: 20px;
             margin-top: 20px;
-            flex-wrap: wrap; /* Allow wrapping for smaller screens */
+            flex-wrap: wrap;
         }
 
         .details-section {
-            flex: 1; /* Grow to fill space */
-            min-width: 250px; /* Minimum width to prevent sections from becoming too narrow */
+            flex: 1;
+            min-width: 250px;
             padding: 15px;
             border: 1px solid #c3e6cb;
             border-radius: 8px;
@@ -114,12 +125,12 @@
             margin: 0;
             padding: 4px;
             border: none;
-            text-align: left; /* Align text to left */
+            text-align: left;
         }
 
         @media (max-width: 600px) {
             .details-container {
-                flex-direction: column; /* Stack sections vertically on small screens */
+                flex-direction: column;
             }
         }
     </style>
@@ -138,27 +149,41 @@
                 <th class="no-border text-left">Factuurdatum:</th>
                 <td class="no-border">{{ items.invoice_date }}</td>
             </tr>
+            <tr>
+                <th class="no-border text-left">Opgemaakt op:</th>
+                <td class="no-border">{{ items.invoice.invoice_created_at|date:"d/m/Y" }}</td>
+            </tr>
         </table>
 
-        <!-- Simplified Company and Client Details Section -->
-        <div class="details-container">
-            <div class="details-section">
-                <div class="details-content">
-                    <p><span class="value">Bedrijf:</span> XXX</p>
-                    <p><span class="value">Adres:</span> XXX</p>
-                    <p><span class="value">Telefoon:</span> XXX</p>
-                    <p><span class="value">Email:</span> XXX</p>
-                </div>
-            </div>
-            <div class="details-section">
-                <div class="details-content">
-                    <p><span class="value">Naam:</span> XXX</p>
-                    <p><span class="value">Adres:</span> XXX</p>
-                    <p><span class="value">Telefoon:</span> XXX</p>
-                    <p><span class="value">Email:</span> XXX</p>
-                </div>
-            </div>
-        </div>
+        <!-- New Table for Company and Client Details -->
+        <table class="table">
+            <tr>
+                <td style="width: 50%; vertical-align: top;">
+                    <strong>Bedrijfsdetails:</strong>
+                    <p>
+                        Naam: {{ items.assistent.assistent_naamBedrijf }}<br>
+                        BTW Nummer: {{ items.assistent.assistent_btwNummer }}<br>
+                        Adres: {{ items.assistent.assistent_straatBedrijf }} {{ items.assistent.assistent_huisnummerBedrijf }}<br>
+                        Stad: {{ items.assistent.assistent_stadBedrijf }}<br>
+                        Postcode: {{ items.assistent.assistent_postcodeBedrijf }}<br>
+                        Telefoonnummer: {{ items.assistent.user.phone_number }}<br>
+                        Email: {{ items.assistent.user.email }}
+                    </p>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+                    <strong>Klantdetails:</strong>
+                    <p>
+                        Client Name: XXX<br>
+                        Address: XXX<br>
+                        City: XXX<br>
+                        Postal Code: XXX<br>
+                        Country: XXX<br>
+                        Phone: XXX<br>
+                        Email: XXX
+                    </p>
+                </td>
+            </tr>
+        </table>
 
         <table class="table table-bordered">
             <thead>
@@ -187,7 +212,7 @@
                     <td>€ {{ items.totaalbedragFactuur }}</td>
                 </tr>
                 <tr class="font-weight-bold">
-                    <td colspan="4" class="text-right">BTW</td>
+                    <td colspan="4" class="text-right">BTW (21%)</td>
                     <td>€ {{ items.btw }}</td>
                 </tr>
                 <tr class="font-weight-bold">
@@ -197,7 +222,8 @@
             </tfoot>
         </table>
         <div class="text-center mt-4">
-            <p>Bedankt!</p>
+            <p>Bedankt voor uw vertrouwen!</p>
+            <p>Gelieve het openstaande bedrag te storten op rekeningnummer <strong>{{ items.assistent.assistent_rekeningnummer }}</strong></p>
         </div>
     </div>
 </body>
