@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import timedelta, datetime
 from io import BytesIO  # For handling in-memory file objects
 
@@ -19,7 +18,6 @@ from xhtml2pdf import pisa  # For converting HTML to PDF
 
 from accounts.decorators import role_required
 from accounts.models import Assistent, User, Apotheek
-from apotheekhulp_main import settings
 from calendar_app.models import Event
 from invoice.forms import LinkBetweenAssistentAndApotheekForm
 from .models import InvoiceOverview, InvoiceDetail
@@ -721,15 +719,12 @@ def create_invoice(request):
             totaalbedragFactuurMetBtw = round(totaalbedragFactuur + btw, 2)
             # Ensure invoice_date is a datetime object (convert if necessary)
             if isinstance(invoice.invoice_date, str):
-                print('1')
                 invoice_date = datetime.strptime(invoice.invoice_date, '%Y-%m-%d')  # Adjust format if needed
             else:
-                print('2')
                 invoice_date = invoice.invoice_date
 
             # Format the date to 'dd/mm/yyyy'
             formatted_invoice_date = invoice_date.strftime('%d/%m/%Y')
-            print(formatted_invoice_date)
             items_needed_for_pdf_creation = {
                 'events': events,
                 'totaalbedragFactuur': totaalbedragFactuur,

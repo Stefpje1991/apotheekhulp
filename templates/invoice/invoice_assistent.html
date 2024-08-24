@@ -11,74 +11,156 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+        .header {
+            width: 100%;
+            background-color: #d4edda;
+            padding: 15px 0;
+            color: #155724;
+            text-align: center;
+            margin: 0;
+        }
+
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 900px; /* Increased max-width to accommodate side-by-side sections */
             margin: 0 auto;
             padding: 20px;
         }
-        .header, .footer {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .header img {
-            max-width: 150px;
-        }
-        .invoice-info, .events-table {
+
+        .table {
             width: 100%;
-            border-collapse: collapse;
             margin-bottom: 20px;
+            border-collapse: collapse;
         }
-        .invoice-info th, .invoice-info td, .events-table th, .events-table td {
-            border: 1px solid #ddd;
+
+        .table-bordered th, .table-bordered td {
+            border: none;
             padding: 8px;
+        }
+
+        .table-bordered thead th {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+        }
+
+        .table-bordered tbody td {
+            text-align: center;
+        }
+
+        .table tfoot td {
+            border: none;
+            padding: 8px;
+            text-align: right;
+        }
+
+        .table tfoot td:last-child {
+            text-align: right;
+        }
+
+        .table tfoot .font-weight-bold {
+            font-weight: bold;
+        }
+
+        .no-border {
+            border: none;
+            padding: 4px 0;
+        }
+
+        .text-left {
             text-align: left;
         }
-        .invoice-info th, .events-table th {
-            background-color: #f2f2f2;
-        }
-        .invoice-info th {
-            width: 30%; /* Adjust width of header cells */
-        }
-        .invoice-info td {
-            width: 70%; /* Adjust width of data cells */
-        }
-        .total-row {
-            font-weight: bold;
+
+        .text-right {
             text-align: right;
         }
-        .total-label {
-            padding-right: 10px;
+
+        .text-center {
+            text-align: center;
         }
-        .total-value {
-            text-align: right;
+
+        .mb-4 {
+            margin-bottom: 20px;
         }
-        .footer {
-            font-size: 0.9em;
+
+        .mt-4 {
+            margin-top: 20px;
+        }
+
+        .details-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px; /* Space between the sections */
+            margin-top: 20px;
+            flex-wrap: wrap; /* Allow wrapping for smaller screens */
+        }
+
+        .details-section {
+            flex: 1; /* Grow to fill space */
+            min-width: 250px; /* Minimum width to prevent sections from becoming too narrow */
+            padding: 15px;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .details-content {
+            font-size: 1em;
+            color: #155724;
+        }
+
+        .details-content p {
+            margin: 0;
+            padding: 4px;
+            border: none;
+            text-align: left; /* Align text to left */
+        }
+
+        @media (max-width: 600px) {
+            .details-container {
+                flex-direction: column; /* Stack sections vertically on small screens */
+            }
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>Factuur</h1>
+    </div>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>Factuur</h1>
-        </div>
-
-        <!-- Invoice Information -->
-        <table class="invoice-info">
+        <table class="table">
             <tr>
-                <th>Factuurnummer:</th>
-                <td>{{ items.invoice.invoice_number }}</td>
+                <th class="no-border text-left">Factuurnummer:</th>
+                <td class="no-border">{{ items.invoice.invoice_number }}</td>
             </tr>
             <tr>
-                <th>Factuurdatum:</th>
-                <td>{{ items.invoice_date }}</td>
+                <th class="no-border text-left">Factuurdatum:</th>
+                <td class="no-border">{{ items.invoice_date }}</td>
             </tr>
         </table>
 
-        <!-- Events Table -->
-        <table class="events-table">
+        <!-- Simplified Company and Client Details Section -->
+        <div class="details-container">
+            <div class="details-section">
+                <div class="details-content">
+                    <p><span class="value">Bedrijf:</span> XXX</p>
+                    <p><span class="value">Adres:</span> XXX</p>
+                    <p><span class="value">Telefoon:</span> XXX</p>
+                    <p><span class="value">Email:</span> XXX</p>
+                </div>
+            </div>
+            <div class="details-section">
+                <div class="details-content">
+                    <p><span class="value">Naam:</span> XXX</p>
+                    <p><span class="value">Adres:</span> XXX</p>
+                    <p><span class="value">Telefoon:</span> XXX</p>
+                    <p><span class="value">Email:</span> XXX</p>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>Datum</th>
@@ -100,25 +182,22 @@
                 {% endfor %}
             </tbody>
             <tfoot>
-                <tr class="total-row">
-                    <td colspan="4" class="total-label">Totaal excl. BTW</td>
-                    <td class="total-value">€ {{ items.totaalbedragFactuur }}</td>
+                <tr class="font-weight-bold">
+                    <td colspan="4" class="text-right">Totaal excl. BTW</td>
+                    <td>€ {{ items.totaalbedragFactuur }}</td>
                 </tr>
-                <tr class="total-row">
-                    <td colspan="4" class="total-label">BTW</td>
-                    <td class="total-value">€ {{ items.btw }}</td>
+                <tr class="font-weight-bold">
+                    <td colspan="4" class="text-right">BTW</td>
+                    <td>€ {{ items.btw }}</td>
                 </tr>
-                <tr class="total-row">
-                    <td colspan="4" class="total-label">Totaal incl. BTW</td>
-                    <td class="total-value">€ {{ items.totaalbedragFactuurMetBtw }}</td>
+                <tr class="font-weight-bold">
+                    <td colspan="4" class="text-right">Totaal incl. BTW</td>
+                    <td>€ {{ items.totaalbedragFactuurMetBtw }}</td>
                 </tr>
             </tfoot>
         </table>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>Thank you for your business!</p>
-            <p>Company Address | Contact Information</p>
+        <div class="text-center mt-4">
+            <p>Bedankt!</p>
         </div>
     </div>
 </body>
