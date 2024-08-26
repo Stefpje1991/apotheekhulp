@@ -301,7 +301,7 @@
                         <th class="text-center">Pauzeduur in minuten</th>
                         <th class="text-center">Naam Assistent</th>
                         <th class="text-center">Naam Apotheek</th>
-                        <th class="text-center">Bedrag</th>
+                        <th class="text-center">Bedrag (excl. BTW)</th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
@@ -377,7 +377,7 @@
                         <th class="text-center">Pauzeduur in minuten</th>
                         <th class="text-center">Naam Assistent</th>
                         <th class="text-center">Naam Apotheek</th>
-                        <th class="text-center">Bedrag</th>
+                        <th class="text-center">Bedrag (excl. BTW)</th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
@@ -389,7 +389,7 @@
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
-                        <td align="center">€ 115</td>
+                        <td align="center">€ {{ event.totaalbedragWerk }}</td>
                      </tr>
                      {% endfor %}
                   </tbody>
@@ -428,9 +428,9 @@
             </div>
             <!-- /Account -->
          </div>
-         <div class="card mb-4">
+         <!-- <div class="card mb-4">
             <h5 class="card-header">Nog te betalen events door apotheek</h5>
-            <!-- Account -->
+
             <div class="card-body">
                {% if paginator_nog_te_betalen_door_apotheek_obj %}
                <table id="tbl_nog_te_betalen_door_apotheek_obj" class="table table-hover">
@@ -462,7 +462,7 @@
                {% else %}
                <p align="center">Geen nog te betalen events gevonden</p>
                {% endif %}
-               <!-- Pagination Controls -->
+
                <nav aria-label="Page navigation" class="mt-4">
                   <div class="d-flex justify-content-center">
                      <ul class="pagination">
@@ -491,11 +491,11 @@
                   </div>
                </nav>
             </div>
-            <!-- /Account -->
-         </div>
-         <div class="card mb-4">
+
+         </div> -->
+         <!--<div class="card mb-4">
             <h5 class="card-header">Betaalde events door apotheek</h5>
-            <!-- Account -->
+
             <div class="card-body">
                {% if paginator_betaalde_events_door_apotheek_obj %}
                <table id="tbl_betaalde_events_door_apotheek_obj" class="table table-hover">
@@ -527,7 +527,7 @@
                {% else %}
                <p align="center">Geen reeds betaalde events door apotheek gevonden</p>
                {% endif %}
-               <!-- Pagination Controls -->
+
                <nav aria-label="Page navigation" class="mt-4">
                   <div class="d-flex justify-content-center">
                      <ul class="pagination">
@@ -556,8 +556,8 @@
                   </div>
                </nav>
             </div>
-            <!-- /Account -->
-         </div>
+
+         </div>-->
       </div>
    </div>
 </div>

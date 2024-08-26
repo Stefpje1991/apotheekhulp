@@ -14,7 +14,9 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.template.loader import get_template  # For loading and rendering HTML templates
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa  # For converting HTML to PDF
+from django.utils import timezone
 
 from accounts.decorators import role_required
 from accounts.models import Assistent, User, Apotheek
@@ -454,6 +456,66 @@ def overview_all_events_admin(request):
 
         items_nog_te_factureren_door_assistent.append(item_to_add)
 
+    items_nog_te_factureren_aan_apotheek = []
+    for item in nog_te_factureren_aan_apotheek:
+        id = item.id
+        start_time = item.start_time
+        end_time = item.end_time
+        aanwezige_tijd = end_time - start_time
+        pauzeduur = timedelta(minutes=item.pauzeduur)
+        gewerkte_uren = (end_time - start_time - pauzeduur).total_seconds() / 3600
+        gewerkte_uren_modal = end_time - start_time - pauzeduur
+        gewerkte_uren = round(gewerkte_uren, 4)
+        assistent = item.assistent
+        apotheek = item.apotheek
+        try:
+            link = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent, apotheek=apotheek)
+            print(link)
+            afstandInKilometers = link.afstandInKilometers
+            print(afstandInKilometers)
+            uurtariefApotheek = link.uurtariefApotheek
+            print(uurtariefApotheek)
+            kilometervergoeding = link.kilometervergoeding
+            print(kilometervergoeding)
+            bedragFietsvergoeding = 0.00
+            if kilometervergoeding:
+                bedragFietsvergoeding = round(afstandInKilometers * 0.43, 2)
+                print(bedragFietsvergoeding)
+
+            totaalbedragZonderFietsvergoeding = round(gewerkte_uren * float(uurtariefApotheek), 2)
+            print(totaalbedragZonderFietsvergoeding)
+            totaalbedragWerk = round(round(gewerkte_uren * float(uurtariefApotheek), 2) + bedragFietsvergoeding, 2)
+            print(totaalbedragWerk)
+            print('---')
+        except:
+            link = ""
+            uurtariefApotheek = 0
+            kilometervergoeding = False
+            afstandInKilometers = 0
+            totaalbedragWerk = 0
+            bedragFietsvergoeding = 0.00
+            totaalbedragZonderFietsvergoeding = 0.00
+
+        item_to_add = {
+            'id': id,
+            'start_time': start_time,
+            'end_time': end_time,
+            'pauzeduur': pauzeduur,
+            'assistent': assistent,
+            'apotheek': apotheek,
+            'link': link,
+            'uurtariefApotheek': uurtariefApotheek,
+            'afstandinKilometers': afstandInKilometers,
+            'kilometervergoeding': kilometervergoeding,
+            'totaalbedragWerk': totaalbedragWerk,
+            'bedragFietsvergoeding': bedragFietsvergoeding,
+            'aanwezige_tijd': aanwezige_tijd,
+            'gewerkte_tijd': gewerkte_uren_modal,
+            'totaalbedrag_zonder_fietsvergoeding': totaalbedragZonderFietsvergoeding
+        }
+
+        items_nog_te_factureren_aan_apotheek.append(item_to_add)
+
     paginator_goed_te_keuren_events_door_assistent = Paginator(goed_te_keuren_events_door_assistent, 5)
     page_number_goed_te_keuren_door_assistent = request.GET.get('page_goed_te_keuren_door_assistent')
     paginator_goed_te_keuren_events_door_assistent_obj = paginator_goed_te_keuren_events_door_assistent.get_page(
@@ -479,7 +541,7 @@ def overview_all_events_admin(request):
     paginator_nog_te_factureren_door_assistent_obj = paginator_nog_te_factureren_door_assistent.get_page(
         page_number_nog_te_factureren_door_assistent)
 
-    paginator_nog_te_factureren_aan_apotheek = Paginator(nog_te_factureren_aan_apotheek, 5)
+    paginator_nog_te_factureren_aan_apotheek = Paginator(items_nog_te_factureren_aan_apotheek, 5)
     page_number_nog_te_factureren_aan_apotheek = request.GET.get('page_nog_te_factureren_aan_apotheek')
     paginator_nog_te_factureren_aan_apotheek_obj = paginator_nog_te_factureren_aan_apotheek.get_page(
         page_number_nog_te_factureren_aan_apotheek)
@@ -777,3 +839,49 @@ def create_pdf(items):
         print('Error')
         return None  # Return None if there was an error
     return response.getvalue()  # Return the PDF content
+
+
+@role_required(3)
+def overview_facturen_assistent_admin(request, user_id):
+    gebruiker = get_object_or_404(User, id=user_id)
+    assistent = get_object_or_404(Assistent, user=gebruiker)
+    invoices = InvoiceOverview.objects.filter(invoice_created_by=assistent)
+    assistent_id = assistent.id
+
+    context = {
+        'user_id': user_id,
+        'apotheek_id': 0,
+        'gebruiker': gebruiker,
+        'invoices': invoices,
+        'assistent_id': assistent_id
+    }
+
+    return render(request, 'invoice/admin/overview_facturen_assistent.html', context)
+
+
+
+@role_required(3)
+def toggle_invoice_status_factuur_assistent(request):
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        invoice_id = data.get('invoice_id')
+        invoice = get_object_or_404(InvoiceOverview, id=invoice_id)
+
+        if invoice.invoice_paid:
+            # If already paid, mark as unpaid and remove the paid timestamp
+            invoice.invoice_paid = False
+            invoice.invoice_paid_at = None
+            invoice.invoice_paid_by = None
+        else:
+            # If unpaid, mark as paid and set the current timestamp
+            invoice.invoice_paid = True
+            invoice.invoice_paid_at = timezone.now()
+            invoice.invoice_paid_by = request.user
+
+        invoice.save()
+
+        return JsonResponse({
+            'status': invoice.invoice_paid,
+            'paid_at': invoice.invoice_paid_at.strftime("%d/%m/%Y %H:%M:%S") if invoice.invoice_paid_at else None
+        })

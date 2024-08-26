@@ -92,10 +92,13 @@ document.addEventListener('DOMContentLoaded', function () {
 // Include SweetAlert2 library if not already included in your HTML
 // <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButton_assistent');
+    const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButton_assistent');
     const saveInvoiceButton = document.getElementById('saveInvoiceButton');
     const createInvoiceModalElement = document.getElementById('createInvoiceModal');
-    const createInvoiceModal = new bootstrap.Modal(createInvoiceModalElement);
+    if(createInvoiceModalElement){
+        const createInvoiceModal = new bootstrap.Modal(createInvoiceModalElement);
+    }
+
 
     if (buttonCreateInvoiceAssistent) {
         buttonCreateInvoiceAssistent.addEventListener('click', function () {
@@ -430,4 +433,44 @@ const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButto
         });
     });
     }
+
+    const badges = document.querySelectorAll('.toggle-status-factuur-assistent');
+
+    badges.forEach(function(badge) {
+        console.log("BADGE")
+        badge.addEventListener('click', function() {
+
+            const invoiceId = badge.dataset.invoiceId;
+            fetch('/invoice/admin/toggle_invoice_status_factuur_assistent/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'), // Ensure you pass the CSRF token
+                },
+                body: JSON.stringify({
+                    'invoice_id': invoiceId
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    badge.classList.remove('text-bg-warning');
+                    badge.classList.add('text-bg-success');
+                    badge.textContent = 'Betaald';
+
+
+                } else {
+                    badge.classList.remove('text-bg-success');
+                    badge.classList.add('text-bg-warning');
+                    badge.textContent = 'Te Betalen';
+
+
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Er is een fout opgetreden bij het bijwerken van de factuurstatus.');
+            });
+        });
+    });
 });
