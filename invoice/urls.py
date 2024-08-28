@@ -15,6 +15,7 @@ urlpatterns = [
     path('admin/edit_event_overview_pagina_goed_te_keuren_door_assistent_admin/<int:event_id>/', views.edit_event_overview_pagina_goed_te_keuren_door_assistent_admin, name='edit_event_overview_pagina_goed_te_keuren_door_assistent_admin'),
     path('admin/accept_apotheek_event/<int:event_id>/', views.accept_apotheek_event, name='accept_apotheek_event'),
     path('create_invoice/', views.create_invoice, name='create_invoice'),
+    path('admin/create_invoice_apotheek/', views.create_invoice_apotheek_admin, name='create_invoice_apotheek_admin'),
     path('admin/overview_facturen_assistent/<int:user_id>/', views.overview_facturen_assistent_admin, name='overview_facturen_assistent_admin'),
     path('admin/toggle_invoice_status_factuur_assistent/', views.toggle_invoice_status_factuur_assistent, name='toggle_invoice_status_factuur_assistent'),
 ]

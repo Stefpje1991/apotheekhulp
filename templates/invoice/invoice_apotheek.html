@@ -161,18 +161,6 @@
                 <td style="width: 50%; vertical-align: top;">
                     <strong>Bedrijfsdetails:</strong>
                     <p>
-                        Naam: {{ items.assistent.assistent_naamBedrijf }}<br>
-                        BTW Nummer: {{ items.assistent.assistent_btwNummer }}<br>
-                        Adres: {{ items.assistent.assistent_straatBedrijf }} {{ items.assistent.assistent_huisnummerBedrijf }}<br>
-                        Stad: {{ items.assistent.assistent_stadBedrijf }}<br>
-                        Postcode: {{ items.assistent.assistent_postcodeBedrijf }}<br>
-                        Telefoonnummer: {{ items.assistent.user.phone_number }}<br>
-                        Email: {{ items.assistent.user.email }}
-                    </p>
-                </td>
-                <td style="width: 50%; vertical-align: top;">
-                    <strong>Klantdetails:</strong>
-                    <p>
                         Client Name: XXX<br>
                         Address: XXX<br>
                         City: XXX<br>
@@ -180,6 +168,19 @@
                         Country: XXX<br>
                         Phone: XXX<br>
                         Email: XXX
+                    </p>
+
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+                    <strong>Klantdetails:</strong>
+                    <p>
+                        Naam: {{ items.apotheek.apotheek_naamBedrijf }}<br>
+                        BTW Nummer: {{ items.apotheek.apotheek_btwNummer }}<br>
+                        Adres: {{ items.apotheek.apotheek_straatBedrijf }} {{ items.apotheek.apotheek_huisnummerBedrijf }}<br>
+                        Stad: {{ items.apotheek.apotheek_stadBedrijf }}<br>
+                        Postcode: {{ items.apotheek.apotheek_postcodeBedrijf }}<br>
+                        Telefoonnummer: {{ items.apotheek.user.phone_number }}<br>
+                        Email: {{ items.apotheek.user.email }}
                     </p>
                 </td>
             </tr>
@@ -189,7 +190,7 @@
             <thead>
                 <tr>
                     <th>Datum</th>
-                    <th>Naam Apotheek</th>
+                    <th>Naam Assistent</th>
                     <th>Uurtarief</th>
                     <th>Gewerkte uren</th>
                     <th>Kilometervergoeding</th>
@@ -200,8 +201,8 @@
                 {% for event in items.events %}
                 <tr>
                     <td>{{ event.start_time|date:"d/m/Y" }}</td>
-                    <td>{{ event.apotheek.apotheek_naamBedrijf }}</td>
-                    <td>€ {{ event.uurtariefAssistent }}</td>
+                    <td>{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
+                    <td>€ {{ event.uurtariefApotheek }}</td>
                     <td>{{ event.gewerkte_tijd }}</td>
                     <td>€ {{ event.bedragFietsvergoeding }}</td>
                     <td>€ {{ event.totaalbedragWerk }}</td>

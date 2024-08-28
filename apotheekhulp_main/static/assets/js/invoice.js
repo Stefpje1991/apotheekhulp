@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Show the modal
                     const modalElement = document.getElementById('editEventModal');
                     const modal = new bootstrap.Modal(modalElement);
+                    console.log(modal)
                     modal.show();
                 } else {
                     alert(`Error: ${data.error}`);
@@ -91,6 +92,156 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Include SweetAlert2 library if not already included in your HTML
 // <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    const buttonCreateInvoiceApotheek = document.getElementById('createInvoiceButton_apotheek');
+const saveInvoiceApotheekButton = document.getElementById('saveInvoiceApotheekButton');
+const createInvoiceApotheekModalElement = document.getElementById('createInvoiceApotheekModal');
+
+let createInvoiceApotheekModal;
+
+if (createInvoiceApotheekModalElement) {
+    createInvoiceApotheekModal = new bootstrap.Modal(createInvoiceApotheekModalElement);
+}
+
+if (buttonCreateInvoiceApotheek) {
+    buttonCreateInvoiceApotheek.addEventListener('click', function () {
+        const checkboxes = document.querySelectorAll('input[name="select_event"]');
+        const selectedEvents = Array.from(checkboxes).filter(checkbox => checkbox.checked);
+
+        // If no checkbox is selected, show the error alert
+        if (selectedEvents.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Geen selectie',
+                text: 'Selecteer minstens één item om een factuur aan te maken.'
+            });
+            return;
+        }
+
+        // Extract Apotheek IDs from selected events
+        const apotheekIds = selectedEvents.map(checkbox => checkbox.closest('tr').querySelector('td:nth-child(7)').innerText.trim());
+
+        // Check if all selected events have the same Apotheek
+        const uniqueApotheekIds = [...new Set(apotheekIds)];
+        if (uniqueApotheekIds.length > 1) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Meerdere Apotheken',
+                text: 'Selecteer alleen items van dezelfde Apotheek om een factuur aan te maken.'
+            });
+            return;
+        }
+
+        const eventsList = document.getElementById('selected-events-list');
+        eventsList.innerHTML = ''; // Clear previous content
+
+        selectedEvents.forEach(checkbox => {
+            const eventId = checkbox.value;
+            const eventRow = document.querySelector(`input[name="select_event"][value="${eventId}"]`).closest('tr');
+            const cells = eventRow.querySelectorAll('td');
+            const eventInfo = `
+                <p>
+                    Datum: ${cells[1].textContent.trim()}
+                </p>
+                <p>
+                    Naam Assistent: ${cells[5].textContent.trim()}
+                </p>
+                <p>
+                    Bedrag: ${cells[7].textContent.trim()}
+                </p>
+                <hr>
+            `;
+            eventsList.innerHTML += eventInfo;
+        });
+
+        // Show the create invoice modal using Bootstrap
+        if (createInvoiceApotheekModal) {
+            createInvoiceApotheekModal.show();
+        }
+    });
+}
+
+    if (saveInvoiceApotheekButton) {
+        saveInvoiceApotheekButton.addEventListener('click', function () {
+            submitInvoiceApotheek();
+        });
+    }
+
+    function submitInvoiceApotheek() {
+        const form = document.getElementById('invoiceFormApotheek');
+        const formData = new FormData(form);
+
+        // Collect selected events and their corresponding totals from the modal
+        const selectedEvents = Array.from(document.querySelectorAll('input[name="select_event"]:checked')).map(checkbox => ({
+            id: checkbox.value,
+            totaalbedragWerk: checkbox.closest('tr').querySelector('td:nth-child(8)').textContent.trim().replace('€ ', '') // Adjust if necessary
+        }));
+
+        if (formData.get('factuurnummer') && formData.get('factuurdatum') && selectedEvents.length > 0) {
+            selectedEvents.forEach((event, index) => {
+                formData.append(`selected_events[${index}][id]`, event.id);
+                formData.append(`selected_events[${index}][totaalbedragWerk]`, event.totaalbedragWerk);
+            });
+
+            fetch('/invoice/admin/create_invoice_apotheek/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    createInvoiceApotheekModal.hide();
+                    // Store success flag and download URL
+                    sessionStorage.setItem('invoiceApotheekCreationStatus', 'success');
+                    sessionStorage.setItem('downloadUrlApotheek', data.download_url); // Ensure this URL is included in the response
+                    window.location.reload(); // Reload the page to see the changes
+                } else {
+                    createInvoiceApotheekModal.hide(); // Hide the modal
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Foutmelding',
+                        text: data.message
+                    });
+                }
+            })
+            .catch(error => {
+                createInvoiceApotheekModal.hide(); // Hide the modal
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Foutmelding',
+                    text: 'Er is een fout opgetreden bij het verzenden van de aanvraag.'
+                });
+            });
+        } else {
+            createInvoiceApotheekModal.hide(); // Hide the modal
+            Swal.fire({
+                icon: 'warning',
+                title: 'Ongeldige Invoer',
+                text: 'Vul alstublieft alle velden in en selecteer minstens één event.'
+            });
+        }
+    }
+
+    // Check sessionStorage for the flag and show the success alert if necessary
+    const invoiceApotheekCreationStatus = sessionStorage.getItem('invoiceCreationStatus');
+    const downloadUrlApotheek = sessionStorage.getItem('downloadUrlApotheek'); // Retrieve the download URL
+
+    if (invoiceApotheekCreationStatus === 'success') {
+        sessionStorage.removeItem('invoiceApotheekCreationStatus'); // Remove the flag
+        sessionStorage.removeItem('downloadUrl'); // Clean up
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Succes',
+            text: 'Factuur werd succesvol aangemaakt.',
+            footer: downloadUrlApotheek ? `<a href="${downloadUrlApotheek}" target="_blank">Download de factuur</a>` : ''
+        });
+    }
+
 
     const buttonCreateInvoiceAssistent = document.getElementById('createInvoiceButton_assistent');
     const saveInvoiceButton = document.getElementById('saveInvoiceButton');
@@ -473,4 +624,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
+
+
 });

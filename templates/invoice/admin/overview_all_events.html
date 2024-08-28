@@ -368,9 +368,15 @@
             <!-- Account -->
             <div class="card-body">
                {% if paginator_nog_te_factureren_aan_apotheek_obj %}
+               <div class="d-flex justify-content-end mb-3">
+                  <button type="button" class="btn btn-warning" id="createInvoiceButton_apotheek">
+                  Maak Nieuwe Factuur
+                  </button>
+               </div>
                <table id="tbl_nog_te_factureren_aan_apotheek_obj" class="table table-hover">
                   <thead>
                      <tr>
+                        <th class="text-center" style="width: 5%">Selecteer</th>
                         <th class="text-center">Datum</th>
                         <th class="text-center">Startuur</th>
                         <th class="text-center">Einduur</th>
@@ -383,6 +389,9 @@
                   <tbody class="table-border-bottom-0">
                      {% for event in paginator_nog_te_factureren_aan_apotheek_obj %}
                      <tr>
+                        <td align="center">
+                           <input type="checkbox" class="form-check-input" name="select_event" value="{{ event.id }}">
+                        </td>
                         <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
                         <td align="center">{{ event.start_time|time:"H:i" }}</td>
                         <td align="center">{{ event.end_time|time:"H:i" }}</td>
@@ -634,5 +643,33 @@
          </div>
       </div>
    </div>
+</div>
+<div class="modal fade" id="createInvoiceApotheekModal" tabindex="-1" aria-labelledby="createInvoiceApotheekModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createInvoiceApotheekModalLabel">Maak een nieuwe factuur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="invoiceFormApotheek" method="POST" action="{% url 'create_invoice_apotheek_admin' %}">
+               {% csrf_token %}
+                <div class="modal-body">
+                    <div id="selected-events-list"></div>
+                    <div class="mb-3">
+                        <label for="factuurnummer" class="form-label">Factuurnummer</label>
+                        <input type="text" class="form-control" id="factuurnummer" name="factuurnummer" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="factuurdatum" class="form-label">Factuurdatum</label>
+                        <input type="date" class="form-control" id="factuurdatum" name="factuurdatum" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+                    <button type="button" class="btn btn-primary" id="saveInvoiceApotheekButton">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}

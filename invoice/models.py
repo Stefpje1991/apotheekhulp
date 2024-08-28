@@ -34,7 +34,7 @@ class InvoiceOverview(models.Model):
     invoice_paid = models.BooleanField(default=False)
     invoice_paid_at = models.DateTimeField(null=True, blank=True)
     invoice_paid_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    invoice_pdf = models.FileField(upload_to='invoices/', null=True, blank=True)
+    invoice_pdf = models.FileField(upload_to='invoices/assistent/', null=True, blank=True)
 
     class Meta:
         unique_together = ('invoice_number', 'invoice_created_by')
@@ -49,6 +49,35 @@ class InvoiceDetail(models.Model):
     invoice_event = models.OneToOneField(Event, on_delete=models.CASCADE)
     invoice_subtotal = models.FloatField(default=0.00)
     invoice_id = models.ForeignKey(InvoiceOverview, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.invoice_id} - {self.invoice_event}'
+
+
+class InvoiceApotheekOverview(models.Model):
+    invoice_number = models.CharField(max_length=100, unique=True)
+    invoice_date = models.DateField()
+    invoice_created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoice_created_by')
+    invoice_created_at = models.DateTimeField(auto_now_add=True)
+    invoice_amount = models.FloatField()
+    invoice_btw = models.FloatField()
+    invoice_paid = models.BooleanField(default=False)
+    invoice_paid_at = models.DateTimeField(null=True, blank=True)
+    invoice_paid_status_changed_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='invoice_paid_status_changed_by')
+    invoice_pdf = models.FileField(upload_to='invoices/apotheek/', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Overview of invoice'
+        verbose_name_plural = 'Overview of invoices'
+
+    def __str__(self):
+        return f'{self.invoice_number} - {self.invoice_created_by}'
+
+
+class InvoiceApotheekDetail(models.Model):
+    invoice_event = models.OneToOneField(Event, on_delete=models.CASCADE)
+    invoice_subtotal = models.FloatField(default=0.00)
+    invoice_id = models.ForeignKey(InvoiceApotheekOverview, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.invoice_id} - {self.invoice_event}'

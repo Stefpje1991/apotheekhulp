@@ -22,7 +22,7 @@ from accounts.decorators import role_required
 from accounts.models import Assistent, User, Apotheek
 from calendar_app.models import Event
 from invoice.forms import LinkBetweenAssistentAndApotheekForm
-from .models import InvoiceOverview, InvoiceDetail
+from .models import InvoiceOverview, InvoiceDetail, InvoiceApotheekOverview, InvoiceApotheekDetail
 from .models import LinkBetweenAssistentAndApotheek
 
 
@@ -470,23 +470,15 @@ def overview_all_events_admin(request):
         apotheek = item.apotheek
         try:
             link = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent, apotheek=apotheek)
-            print(link)
             afstandInKilometers = link.afstandInKilometers
-            print(afstandInKilometers)
             uurtariefApotheek = link.uurtariefApotheek
-            print(uurtariefApotheek)
             kilometervergoeding = link.kilometervergoeding
-            print(kilometervergoeding)
             bedragFietsvergoeding = 0.00
             if kilometervergoeding:
                 bedragFietsvergoeding = round(afstandInKilometers * 0.43, 2)
-                print(bedragFietsvergoeding)
 
             totaalbedragZonderFietsvergoeding = round(gewerkte_uren * float(uurtariefApotheek), 2)
-            print(totaalbedragZonderFietsvergoeding)
             totaalbedragWerk = round(round(gewerkte_uren * float(uurtariefApotheek), 2) + bedragFietsvergoeding, 2)
-            print(totaalbedragWerk)
-            print('---')
         except:
             link = ""
             uurtariefApotheek = 0
@@ -797,10 +789,11 @@ def create_invoice(request):
                 'btw': btw,
                 'totaalbedragFactuurMetBtw': totaalbedragFactuurMetBtw,
                 'assistent': request.user.assistent,
+                'apotheek': 0,
                 'invoice': invoice,
                 'invoice_date': formatted_invoice_date
             }
-            pdf_content = create_pdf(items_needed_for_pdf_creation)
+            pdf_content = create_pdf(items_needed_for_pdf_creation, 'invoice/invoice_assistent.html')
             if not pdf_content:
                 sweetify.error(request, 'Error', text='Fout bij het genereren van de PDF.')
                 return JsonResponse({'status': 'error', 'message': 'Error generating PDF'})
@@ -826,8 +819,8 @@ def create_invoice(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
 
-def create_pdf(items):
-    template_path = 'invoice/invoice_assistent.html'  # Path to your HTML template
+def create_pdf(items, path):
+    template_path = path  # Path to your HTML template
     context = {
         'items': items
     }
@@ -836,7 +829,6 @@ def create_pdf(items):
     html = template.render(context)  # Render the template with context
     pisa_status = pisa.CreatePDF(html, dest=response)  # Convert HTML to PDF
     if pisa_status.err:
-        print('Error')
         return None  # Return None if there was an error
     return response.getvalue()  # Return the PDF content
 
@@ -885,3 +877,146 @@ def toggle_invoice_status_factuur_assistent(request):
             'status': invoice.invoice_paid,
             'paid_at': invoice.invoice_paid_at.strftime("%d/%m/%Y %H:%M:%S") if invoice.invoice_paid_at else None
         })
+
+
+@role_required(3)
+def create_invoice_apotheek_admin(request):
+    if request.method == 'POST':
+        data = request.POST
+        factuurnummer = data.get('factuurnummer')
+        factuurdatum = data.get('factuurdatum')
+
+        selected_event_ids = []
+        selected_event_totals = []
+
+        i = 0
+        while True:
+            event_id = data.get(f'selected_events[{i}][id]')
+            totaalbedragWerk = data.get(f'selected_events[{i}][totaalbedragWerk]')
+            if not event_id:
+                break
+            selected_event_ids.append(event_id)
+            selected_event_totals.append(totaalbedragWerk)
+            i += 1
+
+        if not factuurnummer or not factuurdatum or not selected_event_ids:
+            sweetify.error(request, 'Error', text='Vul alstublieft alle velden in en selecteer minstens één event.')
+            return JsonResponse({'status': 'error', 'message': 'Missing required fields or no events selected'})
+
+        try:
+            invoice = InvoiceApotheekOverview.objects.create(
+                invoice_number=factuurnummer,
+                invoice_date=factuurdatum,
+                invoice_created_by=request.user,
+                invoice_amount=round(sum(float(total) for total in selected_event_totals), 2),
+                invoice_btw=round(sum(float(total) for total in selected_event_totals) * 0.21, 2),
+            )
+
+            events = []
+            totaalbedragFactuur = 0.00
+
+            for event_id, total in zip(selected_event_ids, selected_event_totals):
+                event = Event.objects.get(id=event_id)
+                InvoiceApotheekDetail.objects.create(
+                    invoice_event=event,
+                    invoice_subtotal=float(total),
+                    invoice_id=invoice
+                )
+                event.invoiced_to_apotheek = True
+                event.save()
+                id = event.id
+                start_time = event.start_time
+                end_time = event.end_time
+                aanwezige_tijd = end_time - start_time
+                pauzeduur = timedelta(minutes=event.pauzeduur)
+                gewerkte_uren = (end_time - start_time - pauzeduur).total_seconds() / 3600
+                gewerkte_uren_modal = end_time - start_time - pauzeduur
+                gewerkte_uren = round(gewerkte_uren, 4)
+                assistent = event.assistent
+                apotheek = event.apotheek
+                try:
+                    link = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent, apotheek=apotheek)
+                    uurtariefAssistent = float(link.uurtariefAssistent)
+                    afstandInKilometers = link.afstandInKilometers
+                    uurtariefApotheek = float(link.uurtariefApotheek)
+                    kilometervergoeding = link.kilometervergoeding
+                    bedragFietsvergoeding = 0.00
+                    if kilometervergoeding:
+                        bedragFietsvergoeding = round(afstandInKilometers * 0.43, 2)
+                    totaalbedragZonderFietsvergoeding = round(gewerkte_uren * uurtariefApotheek, 2)
+                    totaalbedragWerk = round(round(gewerkte_uren * uurtariefApotheek, 2) + bedragFietsvergoeding, 2)
+                    totaalbedragFactuur += totaalbedragWerk
+                except:
+                    link = ""
+                    uurtariefAssistent = 0
+                    uurtariefApotheek = 0
+                    kilometervergoeding = False
+                    afstandInKilometers = 0
+                    totaalbedragWerk = 0
+                    bedragFietsvergoeding = 0.00
+                    totaalbedragZonderFietsvergoeding = 0.00
+
+                item_to_add = {
+                    'id': id,
+                    'start_time': start_time,
+                    'end_time': end_time,
+                    'pauzeduur': pauzeduur,
+                    'assistent': assistent,
+                    'apotheek': apotheek,
+                    'link': link,
+                    'uurtariefAssistent': uurtariefAssistent,
+                    'uurtariefApotheek': uurtariefApotheek,
+                    'afstandinKilometers': afstandInKilometers,
+                    'kilometervergoeding': kilometervergoeding,
+                    'totaalbedragWerk': totaalbedragWerk,
+                    'bedragFietsvergoeding': bedragFietsvergoeding,
+                    'aanwezige_tijd': aanwezige_tijd,
+                    'gewerkte_tijd': gewerkte_uren_modal,
+                    'totaalbedrag_zonder_fietsvergoeding': totaalbedragZonderFietsvergoeding
+                }
+                events.append(item_to_add)
+
+            totaalbedragFactuur = round(totaalbedragFactuur, 2)
+            btw = round(totaalbedragFactuur * 0.21, 2)
+            totaalbedragFactuurMetBtw = round(totaalbedragFactuur + btw, 2)
+            # Ensure invoice_date is a datetime object (convert if necessary)
+            if isinstance(invoice.invoice_date, str):
+                invoice_date = datetime.strptime(invoice.invoice_date, '%Y-%m-%d')  # Adjust format if needed
+            else:
+                invoice_date = invoice.invoice_date
+
+            # Format the date to 'dd/mm/yyyy'
+            formatted_invoice_date = invoice_date.strftime('%d/%m/%Y')
+            items_needed_for_pdf_creation = {
+                'events': events,
+                'totaalbedragFactuur': totaalbedragFactuur,
+                'btw': btw,
+                'totaalbedragFactuurMetBtw': totaalbedragFactuurMetBtw,
+                'apotheek': apotheek,
+                'assistent': 0,
+                'invoice': invoice,
+                'invoice_date': formatted_invoice_date
+            }
+            pdf_content = create_pdf(items_needed_for_pdf_creation, 'invoice/invoice_apotheek.html')
+            if not pdf_content:
+                sweetify.error(request, 'Error', text='Fout bij het genereren van de PDF.')
+                return JsonResponse({'status': 'error', 'message': 'Error generating PDF'})
+
+            # Save the PDF to the model
+            # Generate filename with timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            pdf_filename = f'invoice_{timestamp}_{invoice.invoice_number}.pdf'
+            invoice.invoice_pdf.save(pdf_filename, ContentFile(pdf_content))
+
+            # Provide download link in the response
+            download_url = request.build_absolute_uri(invoice.invoice_pdf.url)
+            return JsonResponse({'status': 'success', 'pdf_url': download_url, 'download_url': download_url})
+        except IntegrityError:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Factuurnummer bestaat al. Kies een ander nummer.'})
+
+        except Exception as e:
+            sweetify.error(request, 'Error', text=str(e))
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
