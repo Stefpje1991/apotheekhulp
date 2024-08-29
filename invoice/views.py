@@ -13,10 +13,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.template.loader import get_template  # For loading and rendering HTML templates
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from xhtml2pdf import pisa  # For converting HTML to PDF
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from xhtml2pdf import pisa  # For converting HTML to PDF
 
 from accounts.decorators import role_required
 from accounts.models import Assistent, User, Apotheek
@@ -37,7 +36,7 @@ def overview_link_assistent_apotheek_admin(request, user_id):
     assistent = None
     apotheek = None
 
-    # Determine role and get the appropriate instance
+    # Get assistent and apotheek based on role
     if gebruiker.role == 1:
         assistent = get_object_or_404(Assistent, user=gebruiker)
         assistent_id = assistent.id
@@ -47,27 +46,20 @@ def overview_link_assistent_apotheek_admin(request, user_id):
         apotheek_id = apotheek.id
         links = LinkBetweenAssistentAndApotheek.objects.filter(apotheek=apotheek)
 
-    # Prepare the form for the modal
-    if request.method == 'POST':
-        form = LinkBetweenAssistentAndApotheekForm(request.POST)
-        if form.is_valid():
-            form.save()
-            # Optionally, you can redirect to the same page or another page after successful submission
-            return redirect('overview_link_assistent_apotheek_admin', user_id=user_id)
-        # If the form is not valid, the errors will be passed to the template as part of the form
-    else:
-        form = LinkBetweenAssistentAndApotheekForm()
+    # Fetch available assistents and apotheken
+    all_assistents = Assistent.objects.all()
+    all_apotheken = Apotheek.objects.all()
 
-    # Pass the context to the template
     context = {
         'user_id': user_id,
         'gebruiker': gebruiker,
         'assistent_id': assistent_id,
         'apotheek_id': apotheek_id,
         'links': links,
-        'form': form,
-        'assistent': assistent,  # Pass the Assistent object
-        'apotheek': apotheek,  # Pass the Apotheek object
+        'assistent': assistent,
+        'apotheek': apotheek,
+        'all_assistents': all_assistents,
+        'all_apotheken': all_apotheken,
     }
 
     return render(request, 'invoice/admin/overview_link_assistent_apotheek_admin.html', context)
@@ -153,7 +145,8 @@ def update_event_status_assistent(request, event_id):
 def overview_events_assistent(request):
     assistent = get_object_or_404(Assistent, user=request.user)
     te_bekijken_events_door_assistent = Event.objects.filter(assistent=assistent, status='noaction')
-    te_bekijken_events_door_apotheek = Event.objects.filter(assistent=assistent, status='Accepted').exclude(status_apotheek='Accepted')
+    te_bekijken_events_door_apotheek = Event.objects.filter(assistent=assistent, status='Accepted').exclude(
+        status_apotheek='Accepted')
     nog_te_factureren_events_door_assistent = Event.objects.filter(assistent=assistent, invoiced=False,
                                                                    status='Accepted',
                                                                    status_apotheek='Accepted')
@@ -246,6 +239,7 @@ def overview_events_admin(request, user_id):
     gewerkte_dagen_te_accepteren_door_apotheek = None
     gefactureerde_dagen_aan_apotheek = None
     betaalde_dagen_door_apotheek = None
+    event_status_declined_by_assistent = None
     items_nog_te_factureren_door_assistent = []
     items_nog_te_factureren_aan_apotheek = []
 
@@ -295,6 +289,7 @@ def overview_events_admin(request, user_id):
 
         # Fetch relevant events
         events_status_no_action = Event.objects.filter(assistent=assistent, status='noaction').order_by('start_time')
+        event_status_declined_by_assistent = Event.objects.filter(assistent=assistent, status='Declined').order_by('start_time')
         gewerkte_dagen_te_accepteren_door_apotheek = Event.objects.filter(assistent=assistent,
                                                                           status='Accepted').exclude(
             status_apotheek='Accepted').order_by('start_time')
@@ -315,15 +310,21 @@ def overview_events_admin(request, user_id):
 
         # Populate items_nog_te_factureren_door_assistent
         for item in nog_te_factureren_dagen:
-            uurtariefAssistent = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent,
+            try:
+                uurtariefAssistent = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent,
                                                                              apotheek=item.apotheek).uurtariefAssistent
+            except:
+                uurtariefAssistent = 0
             item_to_add = calculate_invoice_item(item, uurtariefAssistent)
             items_nog_te_factureren_door_assistent.append(item_to_add)
 
         # Populate items_nog_te_factureren_aan_apotheek
         for item in nog_te_factureren_dagen_aan_apotheek:
-            uurtariefApotheek = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent,
+            try:
+                uurtariefApotheek = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent,
                                                                             apotheek=item.apotheek).uurtariefApotheek
+            except:
+                uurtariefApotheek = 0
             item_to_add = calculate_invoice_item(item, uurtariefApotheek, is_apotheek=True)
             items_nog_te_factureren_aan_apotheek.append(item_to_add)
 
@@ -333,6 +334,8 @@ def overview_events_admin(request, user_id):
 
         # Fetch relevant events
         events_status_no_action = Event.objects.filter(apotheek=apotheek, status='noaction').order_by('start_time')
+        event_status_declined_by_assistent = Event.objects.filter(apotheek=apotheek, status='Declined').order_by(
+            'start_time')
         gewerkte_dagen_te_accepteren_door_apotheek = Event.objects.filter(apotheek=apotheek, status='Accepted').exclude(
             status_apotheek='Accepted').order_by('start_time')
         nog_te_factureren_dagen = Event.objects.filter(apotheek=apotheek, status='Accepted', status_apotheek='Accepted',
@@ -351,15 +354,21 @@ def overview_events_admin(request, user_id):
 
         # Populate items_nog_te_factureren_door_assistent
         for item in nog_te_factureren_dagen:
-            uurtariefAssistent = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent,
+            try:
+                uurtariefAssistent = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent,
                                                                              apotheek=apotheek).uurtariefAssistent
+            except:
+                uurtariefAssistent = 0
             item_to_add = calculate_invoice_item(item, uurtariefAssistent)
             items_nog_te_factureren_door_assistent.append(item_to_add)
 
         # Populate items_nog_te_factureren_aan_apotheek
         for item in nog_te_factureren_dagen_aan_apotheek:
-            uurtariefApotheek = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent,
+            try:
+                uurtariefApotheek = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent,
                                                                             apotheek=apotheek).uurtariefApotheek
+            except:
+                uurtariefApotheek = 0
             item_to_add = calculate_invoice_item(item, uurtariefApotheek, is_apotheek=True)
             items_nog_te_factureren_aan_apotheek.append(item_to_add)
     # Prepare context
@@ -371,6 +380,7 @@ def overview_events_admin(request, user_id):
         'assistent': assistent,  # Pass the Assistent object
         'apotheek': apotheek,  # Pass the Apotheek object
         'events_status_no_action': events_status_no_action,
+        'event_status_declined_by_assistent': event_status_declined_by_assistent,
         'gewerkte_dagen_te_accepteren_door_apotheek': gewerkte_dagen_te_accepteren_door_apotheek,
         'nog_te_factureren_dagen_aan_apotheek': nog_te_factureren_dagen_aan_apotheek,
         'items_nog_te_factureren_door_assistent': items_nog_te_factureren_door_assistent,
@@ -612,7 +622,7 @@ def edit_event_overview_pagina_goed_te_keuren_door_assistent_admin(request, even
             event.date = data.get('date')
             event.start_time = f"{data.get('date')} {data.get('startTime')}"
             event.end_time = f"{data.get('date')} {data.get('endTime')}"
-            event.pauzeDuur = data.get('pauzeDuur')
+            event.pauzeduur = data.get('pauzeDuur')
             event.assistent_id = data.get('assistent')
             event.apotheek_id = data.get('apotheek')
             event.status = 'noaction'
@@ -851,7 +861,6 @@ def overview_facturen_assistent_admin(request, user_id):
     return render(request, 'invoice/admin/overview_facturen_assistent.html', context)
 
 
-
 @role_required(3)
 def toggle_invoice_status_factuur_assistent(request):
     if request.method == 'POST':
@@ -859,17 +868,29 @@ def toggle_invoice_status_factuur_assistent(request):
         data = json.loads(request.body)
         invoice_id = data.get('invoice_id')
         invoice = get_object_or_404(InvoiceOverview, id=invoice_id)
+        invoice_detail = InvoiceDetail.objects.filter(invoice_id=invoice)
+        print(invoice_detail)
 
         if invoice.invoice_paid:
             # If already paid, mark as unpaid and remove the paid timestamp
             invoice.invoice_paid = False
             invoice.invoice_paid_at = None
             invoice.invoice_paid_by = None
+            for detail in invoice_detail:
+                event = get_object_or_404(Event, instance=detail.invoice_event)
+                print(event)
+                event.paid_by_apotheek = False
+                event.save()
         else:
             # If unpaid, mark as paid and set the current timestamp
             invoice.invoice_paid = True
             invoice.invoice_paid_at = timezone.now()
             invoice.invoice_paid_by = request.user
+            for detail in invoice_detail:
+                event = get_object_or_404(Event, instance=detail.invoice_event)
+                print(event)
+                event.paid_by_apotheek = False
+                event.save()
 
         invoice.save()
 
@@ -904,12 +925,19 @@ def create_invoice_apotheek_admin(request):
             return JsonResponse({'status': 'error', 'message': 'Missing required fields or no events selected'})
 
         try:
+            apotheek = 0
+            for event_id, total in zip(selected_event_ids, selected_event_totals):
+                event = Event.objects.get(id=event_id)
+                apotheek = event.apotheek
+                break
+
             invoice = InvoiceApotheekOverview.objects.create(
                 invoice_number=factuurnummer,
                 invoice_date=factuurdatum,
                 invoice_created_by=request.user,
                 invoice_amount=round(sum(float(total) for total in selected_event_totals), 2),
                 invoice_btw=round(sum(float(total) for total in selected_event_totals) * 0.21, 2),
+                invoice_apotheek=apotheek
             )
 
             events = []
@@ -1020,3 +1048,60 @@ def create_invoice_apotheek_admin(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+
+@role_required(3)
+def overview_facturen_apotheek_admin(request, user_id):
+    gebruiker = get_object_or_404(User, id=user_id)
+    apotheek = get_object_or_404(Apotheek, user=gebruiker)
+    invoices = InvoiceApotheekOverview.objects.filter(invoice_apotheek=apotheek)
+    apotheek_id = apotheek.id
+
+    context = {
+        'user_id': user_id,
+        'apotheek_id': 0,
+        'gebruiker': gebruiker,
+        'invoices': invoices,
+        'apotheek_id': apotheek_id
+    }
+    return render(request, 'invoice/admin/overview_facturen_apotheek.html', context)
+
+
+
+@role_required(3)
+def toggle_invoice_status_factuur_apotheek(request):
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        invoice_id = data.get('invoice_id')
+        # Fetch the invoice overview object
+        invoice = get_object_or_404(InvoiceApotheekOverview, id=invoice_id)
+
+        # Fetch all related invoice details for the invoice
+        invoice_details = InvoiceApotheekDetail.objects.filter(invoice_id=invoice)
+
+        if invoice.invoice_paid:
+            # If already paid, mark as unpaid and remove the paid timestamp
+            invoice.invoice_paid = False
+            invoice.invoice_paid_at = None
+            invoice.invoice_paid_by = None
+            for detail in invoice_details:
+                event = detail.invoice_event
+                event.paid_by_apotheek = False
+                event.save()
+        else:
+            # If unpaid, mark as paid and set the current timestamp
+            invoice.invoice_paid = True
+            invoice.invoice_paid_at = timezone.now()
+            invoice.invoice_paid_by = request.user
+            for detail in invoice_details:
+                event = detail.invoice_event
+                event.paid_by_apotheek = True
+                event.save()
+
+        invoice.save()
+
+        return JsonResponse({
+            'status': invoice.invoice_paid,
+            'paid_at': invoice.invoice_paid_at.strftime("%d/%m/%Y %H:%M:%S") if invoice.invoice_paid_at else None
+        })

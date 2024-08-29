@@ -1,4 +1,17 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    // Check if the success flag is set in localStorage
+    if (localStorage.getItem('eventEditSuccess') === 'true') {
+        // Show the SweetAlert
+        Swal.fire({
+            icon: 'success',
+            title: 'Succes',
+            text: 'Event werd aangepast.',
+        });
+
+        // Clear the flag
+        localStorage.removeItem('eventEditSuccess');
+    }
     // Function to fetch event data and populate the modal
     window.openEditModal = function (eventId) {
         const eventContainer = document.getElementById('row-id');
@@ -25,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Show the modal
                     const modalElement = document.getElementById('editEventModal');
                     const modal = new bootstrap.Modal(modalElement);
-                    console.log(modal)
                     modal.show();
                 } else {
                     alert(`Error: ${data.error}`);
@@ -227,7 +239,7 @@ if (buttonCreateInvoiceApotheek) {
     }
 
     // Check sessionStorage for the flag and show the success alert if necessary
-    const invoiceApotheekCreationStatus = sessionStorage.getItem('invoiceCreationStatus');
+    const invoiceApotheekCreationStatus = sessionStorage.getItem('invoiceApotheekCreationStatus');
     const downloadUrlApotheek = sessionStorage.getItem('downloadUrlApotheek'); // Retrieve the download URL
 
     if (invoiceApotheekCreationStatus === 'success') {
@@ -397,6 +409,13 @@ if (buttonCreateInvoiceApotheek) {
     });
 
     document.addEventListener('click', function (event) {
+        if (event.target.matches('.edit-btn-geweigerd-door-apotheek')) {
+            const eventId = event.target.getAttribute('data-event-id');
+            openEditModal(eventId);
+        }
+    });
+
+    document.addEventListener('click', function (event) {
         if (event.target.matches('.accept_apotheek_event')) {
             const eventId = event.target.closest('tr').getAttribute('data-event-id');
             fetch(`/invoice/admin/accept_apotheek_event/${eventId}/`, {
@@ -451,11 +470,16 @@ if (buttonCreateInvoiceApotheek) {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    window.location.reload();  // Reload the page to reflect changes
+
                     const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
                     if (modal) {
                         modal.hide();  // Hide the modal on success
                     }
+
+                    // Set a flag in localStorage or sessionStorage
+                    localStorage.setItem('eventEditSuccess', 'true');
+                    window.location.reload();  // Reload the page to reflect changes
+
                 } else {
                     alert(`Error: ${data.error}`);
                 }
@@ -497,98 +521,10 @@ if (buttonCreateInvoiceApotheek) {
         });
     }
     // Check if urlContainer exists before accessing its attributes
-    const urlContainer = document.getElementById('urlContainer');
-    if (urlContainer) {
-        const baseEditLinkUrl = urlContainer.getAttribute('data-edit-link-url');
-
-        // Check if baseEditLinkUrl exists
-        if (baseEditLinkUrl) {
-            const editButtons = document.querySelectorAll('.edit-link-assistent-apotheek-btn');
-                // Access the URL pattern from the data attribute
-
-            editButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const row = this.closest('tr');
-                    const linkId = row.getAttribute('data-link-id');
-                    const assistentName = row.querySelector('td:nth-child(1)').textContent.trim();
-                    const apotheekName = row.querySelector('td:nth-child(2)').textContent.trim();
-                    const uurtariefAssistent = row.querySelector('td:nth-child(4)').textContent.trim().replace('€ ', '');
-                    const uurtariefApotheek = row.querySelector('td:nth-child(5)').textContent.trim().replace('€ ', '');
-                    const kilometervergoeding = row.querySelector('td:nth-child(6) i').classList.contains('fa-check');
-                    const afstandInKilometers = row.querySelector('td:nth-child(7)').textContent.trim();
-
-                    // Populate modal fields immediately
-                    const modalLinkId = document.getElementById('editModalLinkId');
-                    const modalAssistent = document.getElementById('id_assistent');
-                    const modalApotheek = document.getElementById('id_apotheek');
-                    const modalUurtariefAssistent = document.getElementById('id_uurtariefAssistent');
-                    const modalUurtariefApotheek = document.getElementById('id_uurtariefApotheek');
-                    const modalKilometervergoeding = document.getElementById('id_kilometervergoeding');
-                    const modalAfstandInKilometers = document.getElementById('id_afstandInKilometers');
-
-                    modalLinkId.value = linkId;
-                    modalAssistent.value = assistentName;
-                    modalApotheek.value = apotheekName;
-                    modalUurtariefAssistent.value = uurtariefAssistent;
-                    modalUurtariefApotheek.value = uurtariefApotheek;
-                    modalKilometervergoeding.checked = kilometervergoeding;
-                    modalAfstandInKilometers.value = afstandInKilometers;
-
-                    // Update the form action URL
-                    const formAction = baseEditLinkUrl.replace('/0/', `/${linkId}/`);
-                    document.getElementById('editLinkForm').setAttribute('action', formAction);
-
-                    // Show the modal
-                    const editModal = new bootstrap.Modal(document.getElementById('editLinkModal'));
-                    editModal.show();
-                });
-            });
-        }
-    }
-
-    // Handle the form submission
-    const editLinkForm = document.getElementById('editLinkForm');
-    if(editLinkForm){
-
-    editLinkForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
-
-        const formData = {
-            uurtariefAssistent: document.getElementById('id_uurtariefAssistent').value,
-            uurtariefApotheek: document.getElementById('id_uurtariefApotheek').value,
-            afstandInKilometers: document.getElementById('id_afstandInKilometers').value,
-            kilometervergoeding: document.getElementById('id_kilometervergoeding').checked ? 'on' : 'off'
-        };
-        const formAction = editLinkForm.getAttribute('action');
-
-        fetch(formAction, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value // Ensure CSRF token is included
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Optionally, refresh or update the page content
-                location.reload(); // Refresh the page or update the content as needed
-            } else {
-                alert('Error updating link: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while updating the link');
-        });
-    });
-    }
 
     const badges = document.querySelectorAll('.toggle-status-factuur-assistent');
 
     badges.forEach(function(badge) {
-        console.log("BADGE")
         badge.addEventListener('click', function() {
 
             const invoiceId = badge.dataset.invoiceId;
@@ -625,5 +561,80 @@ if (buttonCreateInvoiceApotheek) {
         });
     });
 
+    const badgesApotheek = document.querySelectorAll('.toggle-status-factuur-apotheek');
+
+    badgesApotheek.forEach(function(badge) {
+        badge.addEventListener('click', function() {
+
+            const invoiceId = badge.dataset.invoiceId;
+            fetch('/invoice/admin/toggle_invoice_status_factuur_apotheek/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'), // Ensure you pass the CSRF token
+                },
+                body: JSON.stringify({
+                    'invoice_id': invoiceId
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    badge.classList.remove('text-bg-warning');
+                    badge.classList.add('text-bg-success');
+                    badge.textContent = 'Betaald';
+                } else {
+                    badge.classList.remove('text-bg-success');
+                    badge.classList.add('text-bg-warning');
+                    badge.textContent = 'Te Betalen';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Er is een fout opgetreden bij het bijwerken van de factuurstatus.');
+            });
+        });
+    });
+
+    const addNewLinkButton = document.querySelector('.add-new-link-between-assistent-and-apotheek');
+    const editLinkModal = new bootstrap.Modal(document.getElementById('editLinkModal'));
+
+    addNewLinkButton.addEventListener('click', function() {
+        // Reset the form and modal title
+        document.getElementById('editLinkForm').reset();
+        document.getElementById('editModalLinkId').value = '';
+        document.getElementById('editLinkModalLabel').textContent = 'Nieuwe Link Toevoegen';
+
+        // Get the data attributes for IDs
+        const assistentId = addNewLinkButton.getAttribute('data-assistent');
+        console.log(assistentId)
+        const apotheekId = addNewLinkButton.getAttribute('data-apotheek');
+        console.log(apotheekId)
+
+        // Prepopulate the fields
+        const assistentSelect = document.getElementById('id_assistent');
+        console.log(assistentSelect)
+        const apotheekSelect = document.getElementById('id_apotheek');
+        console.log(apotheekSelect)
+
+        if (assistentId) {
+            // Set the value of the assistent dropdown and disable it
+            assistentSelect.value = assistentId;
+            assistentSelect.disabled = true;
+        } else {
+            assistentSelect.disabled = false;  // Enable dropdown if not prepopulated
+        }
+
+        if (apotheekId) {
+            // Set the value of the apotheek dropdown and disable it
+            apotheekSelect.value = apotheekId;
+            apotheekSelect.disabled = true;
+        } else {
+            apotheekSelect.disabled = false;  // Enable dropdown if not prepopulated
+        }
+
+        // Show the modal
+        editLinkModal.show();
+    });
 
 });

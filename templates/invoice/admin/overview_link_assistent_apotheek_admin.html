@@ -19,7 +19,12 @@
                <h5 class="mb-0">Overzicht van de verbonden assistenten</h5>
                {% endif %}
                <!-- Button positioned at the top right of the card-header -->
-               <button type="button" class="btn btn-primary position-absolute top-50 end-0 translate-middle-y me-3" data-bs-toggle="modal" data-bs-target="#addLinkModal"><i class="fas fa-plus"></i>&nbsp;&nbsp;Nieuwe Link</button>
+                <button type="button"
+                        class="btn btn-primary position-absolute top-50 end-0 translate-middle-y me-3 add-new-link-between-assistent-and-apotheek"
+                        {% if assistent %}data-assistent="{{ assistent.id }}"{% endif %}
+                        {% if apotheek %}data-apotheek="{{ apotheek.id }}"{% endif %}>
+                    <i class="fas fa-plus"></i>&nbsp;&nbsp;Nieuwe Link
+                </button>
             </div>
             <!-- Account -->
             <div class="card-body">
@@ -65,11 +70,6 @@
                             <i class="fas fa-times"></i>
                             {% endif %}
                         </td>
-                        <td align="center">
-                            <button type="button" class="btn btn-warning btn-sm edit-link-assistent-apotheek-btn" data-bs-toggle="modal" data-bs-target="#editLinkModal">
-                                <i class="fas fa-pencil"></i>
-                            </button>
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -96,11 +96,21 @@
                     <!-- Assuming you use crispy forms, you can render the form fields here -->
                     <div class="mb-3">
                         <label for="id_assistent" class="form-label">Assistent</label>
-                        <input type="text" class="form-control" id="id_assistent" name="assistent" readonly>
+                        <select class="form-control" id="id_assistent" name="assistent">
+                            <option value="">Selecteer Assistent</option>
+                            {% for assistent in all_assistents %}
+                            <option value="{{ assistent.id }}">{{ assistent.user.first_name }} {{ assistent.user.last_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="id_apotheek" class="form-label">Apotheek</label>
-                        <input type="text" class="form-control" id="id_apotheek" name="apotheek" readonly>
+                        <select class="form-control" id="id_apotheek" name="apotheek">
+                            <option value="">Selecteer Apotheek</option>
+                            {% for apotheek in all_apotheken %}
+                            <option value="{{ apotheek.id }}">{{ apotheek.apotheek_naamBedrijf }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="id_uurtariefAssistent" class="form-label">Uurtarief Assistent</label>
@@ -130,10 +140,5 @@
     </div>
 </div>
 
-<div class="row">
-   <div class="col-lg-12">
-      {% include 'includes/alerts.html' %}
-   </div>
-</div>
 
 {% endblock %}

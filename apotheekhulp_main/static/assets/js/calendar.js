@@ -25,8 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         },
         eventContent: function(arg) {
-            let badgeClass = 'text-bg-warning'; // Default color
-            switch (arg.event.extendedProps.status) {
+    console.log(arg.event.extendedProps);
+    let badgeClass = 'text-bg-warning'; // Default color
+
+    switch (arg.event.extendedProps.status) {
+        case 'Accepted':
+            switch (arg.event.extendedProps.status_apotheek) {
                 case 'Accepted':
                     badgeClass = 'text-bg-success';
                     break;
@@ -35,31 +39,40 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
                 default:
                     badgeClass = 'text-bg-warning';
+                    break;
             }
+            break;  // Add this break to prevent fall-through
+        case 'Declined':
+            badgeClass = 'text-bg-danger';
+            break;
+        default:
+            badgeClass = 'text-bg-warning';
+            break;
+    }
 
-            let customHtml = '';
-            if (arg.event.extendedProps.user_role === 1 || arg.event.extendedProps.user_role === 2) {
-                // Show category for Assistants
-                customHtml = `
-                    <div style="text-align: center;">
-                        <span class="badge ${badgeClass}">
-                            ${arg.event.extendedProps.category || 'No Category'} - ${arg.event.start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                    </div>
-                `;
-            } else if (arg.event.extendedProps.user_role === 3) {
-                // Show assistant's name for Admins
-                customHtml = `
-                    <div style="text-align: center;">
-                        <span class="badge ${badgeClass}">
-                            ${arg.event.extendedProps.assistent_name || 'Unknown'} - ${arg.event.start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                    </div>
-                `;
-            }
+    let customHtml = '';
+    if (arg.event.extendedProps.user_role === 1 || arg.event.extendedProps.user_role === 2) {
+        // Show category for Assistants
+        customHtml = `
+            <div style="text-align: center;">
+                <span class="badge ${badgeClass}">
+                    ${arg.event.extendedProps.category || 'No Category'} - ${arg.event.start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+            </div>
+        `;
+    } else if (arg.event.extendedProps.user_role === 3) {
+        // Show assistant's name for Admins
+        customHtml = `
+            <div style="text-align: center;">
+                <span class="badge ${badgeClass}">
+                    ${arg.event.extendedProps.assistent_name || 'Unknown'} - ${arg.event.start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+            </div>
+        `;
+    }
 
-            return { html: customHtml };
-        },
+    return { html: customHtml };
+},
         eventClick: function(info) {
             showEventDetails(info.event);
         },

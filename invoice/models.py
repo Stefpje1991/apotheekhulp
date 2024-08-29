@@ -60,6 +60,7 @@ class InvoiceApotheekOverview(models.Model):
     invoice_created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoice_created_by')
     invoice_created_at = models.DateTimeField(auto_now_add=True)
     invoice_amount = models.FloatField()
+    invoice_apotheek = models.ForeignKey(Apotheek, on_delete=models.CASCADE)
     invoice_btw = models.FloatField()
     invoice_paid = models.BooleanField(default=False)
     invoice_paid_at = models.DateTimeField(null=True, blank=True)

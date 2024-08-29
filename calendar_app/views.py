@@ -9,6 +9,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import localtime
 from django.views.decorators.csrf import csrf_exempt
 
+from accounts.decorators import role_required
 from accounts.models import User
 from .models import Assistent, Apotheek, Event
 
@@ -223,6 +224,7 @@ def edit_event(request, event_id):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
+@role_required(3)
 @csrf_exempt
 def delete_event(request, event_id):
     if request.method == 'POST':
@@ -230,3 +232,8 @@ def delete_event(request, event_id):
         event.delete()
         return JsonResponse({'status': 'success', 'message': 'Event deleted successfully'})
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@role_required(3)
+def edit_event_in_table(request, event_id):
+    return JsonResponse({'status': 'success'})

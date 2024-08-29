@@ -17,5 +17,7 @@ urlpatterns = [
     path('create_invoice/', views.create_invoice, name='create_invoice'),
     path('admin/create_invoice_apotheek/', views.create_invoice_apotheek_admin, name='create_invoice_apotheek_admin'),
     path('admin/overview_facturen_assistent/<int:user_id>/', views.overview_facturen_assistent_admin, name='overview_facturen_assistent_admin'),
+    path('admin/overview_facturen_apotheek/<int:user_id>', views.overview_facturen_apotheek_admin, name='overview_facturen_apotheek_admin'),
     path('admin/toggle_invoice_status_factuur_assistent/', views.toggle_invoice_status_factuur_assistent, name='toggle_invoice_status_factuur_assistent'),
+    path('admin/toggle_invoice_status_factuur_apotheek/', views.toggle_invoice_status_factuur_apotheek, name='toggle_invoice_status_factuur_apotheek'),
 ]

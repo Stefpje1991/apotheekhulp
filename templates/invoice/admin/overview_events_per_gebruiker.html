@@ -23,6 +23,8 @@
                         <th class="text-center">Pauzeduur in minuten</th>
                         <th class="text-center">Naam Assistent</th>
                         <th class="text-center">Naam Apotheek</th>
+                        <th class="text-center"></th>
+                        <th class="text-center"></th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
@@ -34,12 +36,62 @@
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                        <td align="center">
+                           <span class="badge bg-warning edit-btn-geweigerd-door-apotheek" style="cursor: pointer;" data-event-id={{event.id}}>Bewerken</span>
+                        </td>
+                        <td align="center">
+                           <span class="badge bg-danger" style="cursor: pointer;" onclick="deleteEvent({{ event.id }})">Verwijderen</span>
+                        </td>
                      </tr>
                   {% endfor %}
                   </tbody>
                </table>
                {% else %}
                <p align="center">Geen openstaande aanvragen gevonden</p>
+               {% endif %}
+            </div>
+         </div>
+         <div class="card mb-4">
+            <div class="card-header position-relative">
+               <h5 class="mb-0">Overzicht van geweigerde opdrachten door assistent</h5>
+            </div>
+            <!-- Account -->
+            <div class="card-body">
+               {% if event_status_declined_by_assistent.exists %}
+               <table id="tbl_overzicht_geweigerde_events_door_assistent" class="table table-hover">
+                  <thead>
+                     <tr>
+                        <th class="text-center">Datum</th>
+                        <th class="text-center">Startuur</th>
+                        <th class="text-center">Einduur</th>
+                        <th class="text-center">Pauzeduur in minuten</th>
+                        <th class="text-center">Naam Assistent</th>
+                        <th class="text-center">Naam Apotheek</th>
+                        <th class="text-center"></th>
+                        <th class="text-center"></th>
+                     </tr>
+                  </thead>
+                  <tbody class="table-border-bottom-0">
+                  {% for event in event_status_declined_by_assistent %}
+                     <tr>
+                        <td align="center">{{ event.start_time|date:"d/m/Y" }}</td>
+                        <td align="center">{{ event.start_time|time:"H:i" }}</td>
+                        <td align="center">{{ event.end_time|time:"H:i" }}</td>
+                        <td align="center">{{ event.pauzeduur }}</td>
+                        <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
+                        <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                        <td align="center">
+                           <span class="badge bg-warning edit-btn-geweigerd-door-apotheek" style="cursor: pointer;" data-event-id={{event.id}}>Bewerken</span>
+                        </td>
+                        <td align="center">
+                           <span class="badge bg-danger" style="cursor: pointer;" onclick="deleteEvent({{ event.id }})">Verwijderen</span>
+                        </td>
+                     </tr>
+                  {% endfor %}
+                  </tbody>
+               </table>
+               {% else %}
+               <p align="center">Geen geweigerde opdrachten gevonden</p>
                {% endif %}
             </div>
          </div>
@@ -60,6 +112,9 @@
                         <th class="text-center">Pauzeduur in minuten</th>
                         <th class="text-center">Naam Assistent</th>
                         <th class="text-center">Naam Apotheek</th>
+                        <th class="text-center"></th>
+                        <th class="text-center"></th>
+                        <th class="text-center"></th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
@@ -71,6 +126,15 @@
                         <td align="center">{{ event.pauzeduur }}</td>
                         <td align="center">{{ event.assistent.user.first_name }} {{ event.assistent.user.last_name }}</td>
                         <td align="center">{{ event.apotheek.user.first_name }} {{ event.apotheek.user.last_name }}</td>
+                        <td align="center">
+                           <span class="badge bg-success accept_apotheek_event" style="cursor: pointer;">Goedkeuren</span>
+                        </td>
+                        <td align="center">
+                           <span class="badge bg-warning edit-btn-goed-te-keuren-door-assistent" style="cursor: pointer;">Wijzigen</span>
+                        </td>
+                        <td align="center">
+                           <span class="badge bg-danger" style="cursor: pointer;" onclick="deleteEvent({{ event.id }})">Verwijderen</span>
+                        </td>
                      </tr>
                   {% endfor %}
                   </tbody>
@@ -241,5 +305,46 @@
       {% include 'includes/alerts.html' %}
    </div>
 </div>
-
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <form id="editEventForm" method="POST">
+            {% csrf_token %}
+            <input type="hidden" id="edit-event-id" name="event_id" />
+            <input type="hidden" id="edit-type" name="event_type" />
+            <div class="modal-body">
+               <input type="hidden" id="modal-edit-event-date" name="date" />
+               <div class="mb-3">
+                  <label for="start-edit-time" class="form-label">Beginuur</label>
+                  <input type="time" class="form-control" id="start-edit-time" name="startTime" />
+               </div>
+               <div class="mb-3">
+                  <label for="end-edit-time" class="form-label">Einduur</label>
+                  <input type="time" class="form-control" id="end-edit-time" name="endTime" />
+               </div>
+               <div class="mb-3">
+                  <label for="edit_pauzeduur" class="form-label">Pauzeduur in minuten</label>
+                  <input type="number" class="form-control" id="edit_pauzeduur" name="pauzeDuur" />
+               </div>
+               <div class="mb-3">
+                  <label for="edit_assistent" class="form-label">Naam van assistent</label>
+                  <select class="form-select" id="edit_assistent" name="assistent"></select>
+               </div>
+               <div class="mb-3">
+                  <label for="edit_apotheek" class="form-label">Naam van apotheek</label>
+                  <select class="form-select" id="edit_apotheek" name="apotheek"></select>
+               </div>
+            </div>
+            <div class="modal-footer">
+               <button type="submit" class="btn btn-primary">Opslaan</button>
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>
+            </div>
+         </form>
+      </div>
+   </div>
+</div>
 {% endblock %}

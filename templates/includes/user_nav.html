@@ -44,6 +44,14 @@
         </a>
     </li>
     {% endif %}
+    {% if gebruiker.role == 2 %}
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'overview_facturen_apotheek_admin' %}active{% endif %}"
+           href="{% url 'overview_facturen_apotheek_admin' user_id %}">
+            <i class="fas fa-receipt"></i>&nbsp;&nbsp; Facturen
+        </a>
+    </li>
+    {% endif %}
     <li class="nav-item">
         <a class="nav-link {% if request.resolver_match.url_name == 'change_password_user' %}active{% endif %}"
            href="{% url 'change_password_user' user_id %}">
