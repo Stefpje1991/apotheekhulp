@@ -71,8 +71,6 @@ def edit_companyprofile(request):
             form.save()
             messages.success(request, "Bedrijfsprofiel werd aangepast")
             return redirect('edit_companyprofile')
-        else:
-            print(form.errors)
     else:
         form = form_class(instance=company_instance)
 
@@ -175,8 +173,6 @@ def edit_companyprofile_assistent_admin(request, assistent_id):
             form.save()
             messages.success(request, "Bedrijfsprofiel werd aangepast")
             return redirect('edit_companyprofile_assistent_admin', assistent_id=assistent_id)
-        else:
-            print(form.errors)
     else:
         form = AssistentForm(instance=assistent)
 
@@ -203,8 +199,6 @@ def edit_companyprofile_apotheek_admin(request, apotheek_id):
             form.save()
             messages.success(request, "Bedrijfsprofiel werd aangepast")
             return redirect('edit_companyprofile_apotheek_admin', apotheek_id=apotheek_id)
-        else:
-            print(form.errors)
     else:
         form = ApotheekForm(instance=apotheek)
 
@@ -261,7 +255,6 @@ def add_nieuwe_assistent_admin(request):
     if request.method == 'POST':
         user_form = UserCreationForm(request.POST)
         assistent_form = AssistentForm(request.POST)
-        print(request.POST)
         if user_form.is_valid() and assistent_form.is_valid():
             user = user_form.save(commit=False)
             user.set_password(user_form.cleaned_data['password'])  # Use password1 for password validation

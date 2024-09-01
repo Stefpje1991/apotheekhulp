@@ -38,7 +38,6 @@
                         <th>Uurtarief Apotheek</th>
                         <th>Kilometervergoeding</th>
                         <th>Afstand in Km</th>
-                        <th>Actief</th>
                      </tr>
                   </thead>
                   <tbody class="table-border-bottom-0">
@@ -63,13 +62,6 @@
                             {% endif %}
                         </td>
                         <td align="center">{{ link.afstandInKilometers }}</td>
-                        <td align="center">
-                            {% if link.actief %}
-                            <i class="fas fa-check"></i>
-                            {% else %}
-                            <i class="fas fa-times"></i>
-                            {% endif %}
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -88,7 +80,7 @@
                 <h5 class="modal-title" id="editLinkModalLabel">Bewerk Link</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editLinkForm" method="post">
+            <form id="editLinkForm" method="post" action="{% url 'create_link_between_assistent_and_apotheek' %}">
                 <div class="modal-body">
                     {% csrf_token %}
                     <input type="hidden" name="link_id" id="editModalLinkId">
@@ -96,7 +88,7 @@
                     <!-- Assuming you use crispy forms, you can render the form fields here -->
                     <div class="mb-3">
                         <label for="id_assistent" class="form-label">Assistent</label>
-                        <select class="form-control" id="id_assistent" name="assistent">
+                        <select class="form-control" id="id_assistent" name="assistent" required>
                             <option value="">Selecteer Assistent</option>
                             {% for assistent in all_assistents %}
                             <option value="{{ assistent.id }}">{{ assistent.user.first_name }} {{ assistent.user.last_name }}</option>
@@ -105,7 +97,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="id_apotheek" class="form-label">Apotheek</label>
-                        <select class="form-control" id="id_apotheek" name="apotheek">
+                        <select class="form-control" id="id_apotheek" name="apotheek" required>
                             <option value="">Selecteer Apotheek</option>
                             {% for apotheek in all_apotheken %}
                             <option value="{{ apotheek.id }}">{{ apotheek.apotheek_naamBedrijf }}</option>
@@ -114,15 +106,15 @@
                     </div>
                     <div class="mb-3">
                         <label for="id_uurtariefAssistent" class="form-label">Uurtarief Assistent</label>
-                        <input type="number" class="form-control" id="id_uurtariefAssistent" name="uurtariefAssistent" step="0.01">
+                        <input type="number" class="form-control" id="id_uurtariefAssistent" name="uurtariefAssistent" step="0.01" required>
                     </div>
                     <div class="mb-3">
                         <label for="id_uurtariefApotheek" class="form-label">Uurtarief Apotheek</label>
-                        <input type="number" class="form-control" id="id_uurtariefApotheek" name="uurtariefApotheek" step="0.01">
+                        <input type="number" class="form-control" id="id_uurtariefApotheek" name="uurtariefApotheek" step="0.01" required>
                     </div>
                     <div class="mb-3">
                         <label for="id_afstandInKilometers" class="form-label">Afstand in Km</label>
-                        <input type="number" class="form-control" id="id_afstandInKilometers" name="afstandInKilometers" step="0.01">
+                        <input type="number" class="form-control" id="id_afstandInKilometers" name="afstandInKilometers" step="0.01" required>
                     </div>
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" value="on" id="id_kilometervergoeding" name="kilometervergoeding">

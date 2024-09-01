@@ -607,15 +607,11 @@ if (buttonCreateInvoiceApotheek) {
 
         // Get the data attributes for IDs
         const assistentId = addNewLinkButton.getAttribute('data-assistent');
-        console.log(assistentId)
         const apotheekId = addNewLinkButton.getAttribute('data-apotheek');
-        console.log(apotheekId)
 
         // Prepopulate the fields
         const assistentSelect = document.getElementById('id_assistent');
-        console.log(assistentSelect)
         const apotheekSelect = document.getElementById('id_apotheek');
-        console.log(apotheekSelect)
 
         if (assistentId) {
             // Set the value of the assistent dropdown and disable it
@@ -636,5 +632,52 @@ if (buttonCreateInvoiceApotheek) {
         // Show the modal
         editLinkModal.show();
     });
+
+document.getElementById('editLinkForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent default form submission
+
+    const form = this;
+
+    // Temporarily enable the disabled fields
+    const assistentSelect = document.getElementById('id_assistent');
+    const apotheekSelect = document.getElementById('id_apotheek');
+
+    const wasAssistentDisabled = assistentSelect.disabled;
+    const wasApotheekDisabled = apotheekSelect.disabled;
+
+    if (wasAssistentDisabled) assistentSelect.disabled = false;
+    if (wasApotheekDisabled) apotheekSelect.disabled = false;
+
+    // Collect form data
+    const formData = new FormData(form);
+
+    // Re-disable the fields if they were originally disabled
+    if (wasAssistentDisabled) assistentSelect.disabled = true;
+    if (wasApotheekDisabled) apotheekSelect.disabled = true;
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Handle success (e.g., close modal, show success message, etc.)
+            editLinkModal.hide();
+            location.reload(); // Reload the page to show updated data
+        } else {
+            // Handle error (e.g., show error messages)
+            alert('An error occurred while saving the link.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving the link.');
+    });
+});
+
 
 });

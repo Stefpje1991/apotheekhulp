@@ -160,3 +160,15 @@
     align-items: center;
     justify-content: center;
 }
+
+
+/* Apply specific styling to the card with the 'custom-card' class */
+.custom-card .card-body {
+    text-align: center; /* Center-aligns the text inside the card */
+}
+
+.custom-card .custom-number {
+    font-size: 3rem; /* Adjust the font size as needed */
+    display: block; /* Ensures the number is on its own line */
+    margin-top: 10px; /* Adds some space above the number */
+}

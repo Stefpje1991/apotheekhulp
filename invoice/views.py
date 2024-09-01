@@ -15,6 +15,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import get_template  # For loading and rendering HTML templates
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa  # For converting HTML to PDF
 
 from accounts.decorators import role_required
@@ -90,15 +91,9 @@ def overview_events_apotheek(request):
 @role_required(2, 3)
 def update_event_status(request, event_id):
     if request.method == 'POST':
-        # Log the raw request body
-        print('Raw request body:', request.body.decode('utf-8'))
-
         try:
             data = json.loads(request.body)  # Parse the JSON data
             status_apotheek = data.get('status_apotheek')
-
-            # Log the extracted data
-            print('Extracted Status:', status_apotheek)
 
             # Process the data (e.g., update the event status)
             event = Event.objects.get(id=event_id)
@@ -117,15 +112,9 @@ def update_event_status(request, event_id):
 @role_required(1, 3)
 def update_event_status_assistent(request, event_id):
     if request.method == 'POST':
-        # Log the raw request body
-        print('Raw request body:', request.body.decode('utf-8'))
-
         try:
             data = json.loads(request.body)  # Parse the JSON data
             status = data.get('status')
-
-            # Log the extracted data
-            print('Extracted Status:', status)
 
             # Process the data (e.g., update the event status)
             event = Event.objects.get(id=event_id)
@@ -675,7 +664,6 @@ def edit_link_between_assistent_and_apotheek(request, user_id, link_id):
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'error': 'Invalid JSON'})
         except Exception as e:
-            print(f"Error: {e}")
             return JsonResponse({'status': 'error', 'error': str(e)})
 
     return JsonResponse({'status': 'error', 'error': 'Invalid request method'})
@@ -869,7 +857,6 @@ def toggle_invoice_status_factuur_assistent(request):
         invoice_id = data.get('invoice_id')
         invoice = get_object_or_404(InvoiceOverview, id=invoice_id)
         invoice_detail = InvoiceDetail.objects.filter(invoice_id=invoice)
-        print(invoice_detail)
 
         if invoice.invoice_paid:
             # If already paid, mark as unpaid and remove the paid timestamp
@@ -878,7 +865,6 @@ def toggle_invoice_status_factuur_assistent(request):
             invoice.invoice_paid_by = None
             for detail in invoice_detail:
                 event = get_object_or_404(Event, instance=detail.invoice_event)
-                print(event)
                 event.paid_by_apotheek = False
                 event.save()
         else:
@@ -888,7 +874,6 @@ def toggle_invoice_status_factuur_assistent(request):
             invoice.invoice_paid_by = request.user
             for detail in invoice_detail:
                 event = get_object_or_404(Event, instance=detail.invoice_event)
-                print(event)
                 event.paid_by_apotheek = False
                 event.save()
 
@@ -1105,3 +1090,48 @@ def toggle_invoice_status_factuur_apotheek(request):
             'status': invoice.invoice_paid,
             'paid_at': invoice.invoice_paid_at.strftime("%d/%m/%Y %H:%M:%S") if invoice.invoice_paid_at else None
         })
+
+
+@require_POST
+@role_required(3)
+def create_link_between_assistent_and_apotheek(request):
+    link_id = request.POST.get('link_id')
+    assistent_id = request.POST.get('assistent')
+    apotheek_id = request.POST.get('apotheek')
+    uurtariefAssistent = request.POST.get('uurtariefAssistent')
+    uurtariefApotheek = request.POST.get('uurtariefApotheek')
+    kilometervergoeding = request.POST.get('kilometervergoeding') == 'on'
+    afstandInKilometers = request.POST.get('afstandInKilometers')
+
+    assistent = get_object_or_404(Assistent, pk=assistent_id)
+    apotheek = get_object_or_404(Apotheek, pk=apotheek_id)
+
+    if link_id:
+        # Update existing link
+        link = get_object_or_404(LinkBetweenAssistentAndApotheek, pk=link_id)
+        link.uurtariefAssistent = uurtariefAssistent
+        link.uurtariefApotheek = uurtariefApotheek
+        link.kilometervergoeding = kilometervergoeding
+        link.afstandInKilometers = afstandInKilometers
+    else:
+        # Create new link
+        link, created = LinkBetweenAssistentAndApotheek.objects.get_or_create(
+            assistent=assistent,
+            apotheek=apotheek,
+            defaults={
+                'uurtariefAssistent': uurtariefAssistent,
+                'uurtariefApotheek': uurtariefApotheek,
+                'kilometervergoeding': kilometervergoeding,
+                'afstandInKilometers': afstandInKilometers,
+            }
+        )
+        if not created:
+            # If the link already exists, update the fields
+            link.uurtariefAssistent = uurtariefAssistent
+            link.uurtariefApotheek = uurtariefApotheek
+            link.kilometervergoeding = kilometervergoeding
+            link.afstandInKilometers = afstandInKilometers
+
+    link.save()
+
+    return JsonResponse({'success': True})
