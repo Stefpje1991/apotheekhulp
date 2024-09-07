@@ -57,6 +57,24 @@
          <div data-i18n="Analytics">Prestaties</div>
       </a>
    </li>
+   <li class="menu-item">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+         <i class="fas fa-receipt me-2"></i>
+         <div data-i18n="Account Settings">Facturen</div>
+      </a>
+      <ul class="menu-sub">
+         <li class="menu-item">
+            <a href="{% url 'overview_all_invoices_assistenten_admin' %}" class="menu-link">
+               <div data-i18n="Account">Assistenten</div>
+            </a>
+         </li>
+         <li class="menu-item">
+            <a href="{% url 'overview_all_invoices_apotheken_admin' %}" class="menu-link">
+               <div data-i18n="Notifications">Apotheken</div>
+            </a>
+         </li>
+      </ul>
+   </li>
    {% endif %}
    <li class="menu-item">
       <a href="{% url 'logout' %}" class="menu-link">

@@ -20,5 +20,8 @@ urlpatterns = [
     path('admin/overview_facturen_apotheek/<int:user_id>', views.overview_facturen_apotheek_admin, name='overview_facturen_apotheek_admin'),
     path('admin/toggle_invoice_status_factuur_assistent/', views.toggle_invoice_status_factuur_assistent, name='toggle_invoice_status_factuur_assistent'),
     path('admin/toggle_invoice_status_factuur_apotheek/', views.toggle_invoice_status_factuur_apotheek, name='toggle_invoice_status_factuur_apotheek'),
-    path('admin/create_link_between_assistent_and_apotheek/', views.create_link_between_assistent_and_apotheek, name='create_link_between_assistent_and_apotheek')
+    path('admin/create_link_between_assistent_and_apotheek/', views.create_link_between_assistent_and_apotheek, name='create_link_between_assistent_and_apotheek'),
+    path('admin/overview_all_invoices_assistenten_admin/', views.overview_all_invoices_assistenten_admin, name='overview_all_invoices_assistenten_admin'),
+    path('admin/overview_all_invoices_apotheken_admin/', views.overview_all_invoices_apotheken_admin, name='overview_all_invoices_apotheken_admin'),
+    path('admin/get_filtered_invoices/', views.get_filtered_invoices, name='get_filtered_invoices'),
 ]

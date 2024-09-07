@@ -1,5 +1,6 @@
 import json
-from datetime import timedelta, datetime
+from datetime import datetime
+from datetime import timedelta
 from io import BytesIO  # For handling in-memory file objects
 
 import pytz
@@ -9,11 +10,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
 from django.db import IntegrityError
+from django.db.models import Sum, F
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.template.loader import get_template  # For loading and rendering HTML templates
 from django.utils import timezone
+from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa  # For converting HTML to PDF
@@ -21,7 +24,6 @@ from xhtml2pdf import pisa  # For converting HTML to PDF
 from accounts.decorators import role_required
 from accounts.models import Assistent, User, Apotheek
 from calendar_app.models import Event
-from invoice.forms import LinkBetweenAssistentAndApotheekForm
 from .models import InvoiceOverview, InvoiceDetail, InvoiceApotheekOverview, InvoiceApotheekDetail
 from .models import LinkBetweenAssistentAndApotheek
 
@@ -278,7 +280,8 @@ def overview_events_admin(request, user_id):
 
         # Fetch relevant events
         events_status_no_action = Event.objects.filter(assistent=assistent, status='noaction').order_by('start_time')
-        event_status_declined_by_assistent = Event.objects.filter(assistent=assistent, status='Declined').order_by('start_time')
+        event_status_declined_by_assistent = Event.objects.filter(assistent=assistent, status='Declined').order_by(
+            'start_time')
         gewerkte_dagen_te_accepteren_door_apotheek = Event.objects.filter(assistent=assistent,
                                                                           status='Accepted').exclude(
             status_apotheek='Accepted').order_by('start_time')
@@ -301,7 +304,7 @@ def overview_events_admin(request, user_id):
         for item in nog_te_factureren_dagen:
             try:
                 uurtariefAssistent = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent,
-                                                                             apotheek=item.apotheek).uurtariefAssistent
+                                                                                 apotheek=item.apotheek).uurtariefAssistent
             except:
                 uurtariefAssistent = 0
             item_to_add = calculate_invoice_item(item, uurtariefAssistent)
@@ -311,7 +314,7 @@ def overview_events_admin(request, user_id):
         for item in nog_te_factureren_dagen_aan_apotheek:
             try:
                 uurtariefApotheek = LinkBetweenAssistentAndApotheek.objects.get(assistent=assistent,
-                                                                            apotheek=item.apotheek).uurtariefApotheek
+                                                                                apotheek=item.apotheek).uurtariefApotheek
             except:
                 uurtariefApotheek = 0
             item_to_add = calculate_invoice_item(item, uurtariefApotheek, is_apotheek=True)
@@ -345,7 +348,7 @@ def overview_events_admin(request, user_id):
         for item in nog_te_factureren_dagen:
             try:
                 uurtariefAssistent = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent,
-                                                                             apotheek=apotheek).uurtariefAssistent
+                                                                                 apotheek=apotheek).uurtariefAssistent
             except:
                 uurtariefAssistent = 0
             item_to_add = calculate_invoice_item(item, uurtariefAssistent)
@@ -355,7 +358,7 @@ def overview_events_admin(request, user_id):
         for item in nog_te_factureren_dagen_aan_apotheek:
             try:
                 uurtariefApotheek = LinkBetweenAssistentAndApotheek.objects.get(assistent=item.assistent,
-                                                                            apotheek=apotheek).uurtariefApotheek
+                                                                                apotheek=apotheek).uurtariefApotheek
             except:
                 uurtariefApotheek = 0
             item_to_add = calculate_invoice_item(item, uurtariefApotheek, is_apotheek=True)
@@ -864,7 +867,7 @@ def toggle_invoice_status_factuur_assistent(request):
             invoice.invoice_paid_at = None
             invoice.invoice_paid_by = None
             for detail in invoice_detail:
-                event = get_object_or_404(Event, instance=detail.invoice_event)
+                event = get_object_or_404(Event, id=detail.invoice_event.id)
                 event.paid_by_apotheek = False
                 event.save()
         else:
@@ -873,7 +876,7 @@ def toggle_invoice_status_factuur_assistent(request):
             invoice.invoice_paid_at = timezone.now()
             invoice.invoice_paid_by = request.user
             for detail in invoice_detail:
-                event = get_object_or_404(Event, instance=detail.invoice_event)
+                event = get_object_or_404(Event, id=detail.invoice_event.id)
                 event.paid_by_apotheek = False
                 event.save()
 
@@ -1052,7 +1055,6 @@ def overview_facturen_apotheek_admin(request, user_id):
     return render(request, 'invoice/admin/overview_facturen_apotheek.html', context)
 
 
-
 @role_required(3)
 def toggle_invoice_status_factuur_apotheek(request):
     if request.method == 'POST':
@@ -1135,3 +1137,97 @@ def create_link_between_assistent_and_apotheek(request):
     link.save()
 
     return JsonResponse({'success': True})
+
+
+@role_required(3)
+def overview_all_invoices_assistenten_admin(request):
+    # Huidige datum en tijd
+    today = now().date()
+
+    # Begin en einde van de vorige maand
+    first_day_of_month = today.replace(day=1)
+    last_month_end = first_day_of_month - timedelta(days=1)
+    first_day_of_last_month = last_month_end.replace(day=1)
+
+    # Facturen van de afgelopen maand
+    last_month_invoices = InvoiceOverview.objects.filter(invoice_date__range=[first_day_of_last_month, last_month_end])
+
+    # Omzet afgelopen maand (som van invoice_amount + invoice_btw)
+    omzet_last_month = last_month_invoices.aggregate(
+        total=Sum(F('invoice_amount') + F('invoice_btw'))
+    )
+
+    # Aantal facturen afgelopen maand
+    invoice_count_last_month = last_month_invoices.count()
+
+    # Aantal unieke personen die een factuur maakten
+    unique_person_count = last_month_invoices.values('invoice_created_by').distinct().count()
+
+    # Totale bedrag dat nog niet betaald is (som van invoice_amount + invoice_btw)
+    unpaid_invoices = InvoiceOverview.objects.filter(invoice_paid=False)
+    unpaid_amount = unpaid_invoices.aggregate(
+        total_unpaid=Sum(F('invoice_amount') + F('invoice_btw'))
+    )
+
+    # Afronden van de bedragen op 2 decimalen
+    omzet_last_month_value = omzet_last_month['total'] if omzet_last_month['total'] is not None else 0
+    omzet_last_month_rounded = round(omzet_last_month_value, 2)
+
+    unpaid_amount_value = unpaid_amount['total_unpaid'] if unpaid_amount['total_unpaid'] is not None else 0
+    unpaid_amount_rounded = round(unpaid_amount_value, 2)
+
+    # Alle assistentenfacturen (voor weergave in de tabel)
+    all_assistenten_invoices = InvoiceOverview.objects.all().order_by('-invoice_date')
+
+    # Context voor de template
+    context = {
+        'all_assistenten_invoices': all_assistenten_invoices,
+        'omzet_last_month': omzet_last_month_rounded,
+        'invoice_count_last_month': invoice_count_last_month,
+        'unique_person_count': unique_person_count,
+        'unpaid_amount': unpaid_amount_rounded
+    }
+
+    return render(request, 'invoice/admin/overview_invoices_assistenten.html', context)
+
+
+@role_required(3)
+def overview_all_invoices_apotheken_admin(request):
+    all_apotheken_invoices = InvoiceApotheekOverview.objects.all().order_by('-invoice_date')
+    context = {
+        'all_apotheken_invoices': all_apotheken_invoices
+    }
+    return render(request, 'invoice/admin/overview_invoices_apotheken.html', context)
+
+
+@role_required(3)
+def get_filtered_invoices(request):
+    status = request.GET.get('status')
+
+    if status == 'all':
+        invoices = InvoiceOverview.objects.all()
+    else:
+        paid_status = status == 'true'
+        invoices = InvoiceOverview.objects.filter(invoice_paid=paid_status)
+
+    data = list(invoices.values(
+        'invoice_number',
+        'invoice_pdf',
+        'invoice_amount',
+        'invoice_btw',
+        'invoice_date',
+        'invoice_created_by__user__first_name',
+        'invoice_created_by__user__last_name',
+        'invoice_created_by__assistent_naamBedrijf',
+        'invoice_paid'
+    ))
+
+    for invoice in data:
+        invoice[
+            'invoice_created_by_name'] = f"{invoice.pop('invoice_created_by__user__first_name')} {invoice.pop('invoice_created_by__user__last_name')}"
+        invoice['invoice_created_by_company'] = invoice.pop('invoice_created_by__assistent_naamBedrijf')
+        invoice['invoice_pdf_url'] = invoice.pop('invoice_pdf')
+        invoice['invoice_date'] = invoice.pop('invoice_date').strftime("%d/%m/%Y")
+        invoice['invoice_paid'] = 'Betaald' if invoice['invoice_paid'] else 'Te Betalen'
+
+    return JsonResponse(data, safe=False)

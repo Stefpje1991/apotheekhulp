@@ -1,0 +1,144 @@
+<!-- change_password.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+   <div class="row">
+      <div class="col-md-12">
+         <div class="card mb-4">
+            <div class="card-widget-separator-wrapper">
+               <div class="card-body card-widget-separator">
+                  <div class="row gy-4 gy-sm-1">
+                     <div class="col-sm-6 col-lg-3">
+                        <div class="d-flex justify-content-between align-items-center card-widget-1 border-end pb-4 pb-sm-0">
+                           <div>
+                              <h4 class="mb-0">€ {{ omzet_last_month }}</h4>
+                              <p class="mb-0">Totaal bedrag afgelopen maand</p>
+                           </div>
+                           <div class="avatar me-sm-6 me-3">
+                              <!-- Added me-3 for spacing -->
+                              <span class="avatar-initial rounded bg-label-secondary text-heading">
+                              <i class="fas fa-euro-sign"></i>
+                              </span>
+                           </div>
+                        </div>
+                        <hr class="d-none d-sm-block d-lg-none me-6">
+                     </div>
+                     <div class="col-sm-6 col-lg-3">
+                        <div class="d-flex justify-content-between align-items-center card-widget-2 border-end pb-4 pb-sm-0">
+                           <div>
+                              <h4 class="mb-0">{{ invoice_count_last_month }}</h4>
+                              <p class="mb-0">Aantal facturen afgelopen maand</p>
+                           </div>
+                           <div class="avatar me-lg-6 me-3">
+                              <span class="avatar-initial rounded bg-label-secondary text-heading">
+                              <i class="bx bx-file bx-26px"></i>
+                              </span>
+                           </div>
+                        </div>
+                        <hr class="d-none d-sm-block d-lg-none">
+                     </div>
+                     <div class="col-sm-6 col-lg-3">
+                        <div class="d-flex justify-content-between align-items-center border-end pb-4 pb-sm-0 card-widget-3">
+                           <div>
+                              <h4 class="mb-0">{{ unique_person_count }}</h4>
+                              <p class="mb-0"># unieke personen</p>
+                           </div>
+                           <div class="avatar me-sm-6 me-3">
+                              <span class="avatar-initial rounded bg-label-secondary text-heading">
+                              <i class="bx bx-user bx-26px"></i>
+                              </span>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-sm-6 col-lg-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                           <div>
+                              <h4 class="mb-0">€ {{ unpaid_amount }}</h4>
+                              <p class="mb-0">Te betalen</p>
+                           </div>
+                           <div class="avatar">
+                              <span class="avatar-initial rounded bg-label-secondary text-heading">
+                              <i class="bx bx-error-circle bx-26px"></i>
+                              </span>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div class="card">
+      <div class="card-header">
+         <div class="d-flex justify-content-between align-items-center">
+            <div>
+               <select class="form-select" style="width: auto;">
+                  <option>Toon 25</option>
+                  <option>Toon 50</option>
+                  <option>Toon 100</option>
+               </select>
+            </div>
+            <div class="d-flex">
+               <input type="text" class="form-control me-2" placeholder="Zoek Factuur">
+               <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    Factuur Status
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <li><a class="dropdown-item dropdown-item-invoice-status" href="#" data-status="all">Alle</a></li>
+                    <li><a class="dropdown-item dropdown-item-invoice-status" href="#" data-status="false">Te Betalen</a></li>
+                    <li><a class="dropdown-item dropdown-item-invoice-status" href="#" data-status="true">Betaald</a></li>
+                </ul>
+            </div>
+            </div>
+         </div>
+      </div>
+      <div class="card-body">
+         <table class="table align-middle" id="invoiceTable">
+            <thead>
+               <tr>
+                  <th class="text-center" scope="col">#</th>
+                  <th class="text-center" scope="col">Apotheek</th>
+                  <th class="text-center" scope="col">Totaalbedrag excl BTW</th>
+                  <th class="text-center" scope="col">BTW (21%)</th>
+                  <th class="text-center" scope="col">Factuurdatum</th>
+                  <th class="text-center" scope="col">Status</th>
+               </tr>
+            </thead>
+            <tbody>
+               {% for invoice in all_assistenten_invoices %}
+               <tr>
+                  <td class="text-center"><a href="{{ invoice.invoice_pdf.url }}">{{ invoice.invoice_number }}</a></td>
+                  <td class="text-center">
+                     <div class="d-flex align-items-center">
+                        <div class="avatar me-2">
+                           <img src="{% if invoice.invoice_created_by.user.profile_picture %}{{ invoice.invoice_created_by.user.profile_picture.url }}{% else %}{% static 'assets/img/avatars/default.jpg' %}{% endif %}" alt class="w-px-40 h-auto rounded-circle" />
+                        </div>
+                        <div>{{ invoice.invoice_created_by.user.first_name }} {{ invoice.invoice_created_by.user.last_name }}<br><small>{{ invoice.invoice_created_by.assistent_naamBedrijf }}</small></div>
+                     </div>
+                  </td>
+                  <td class="text-center">€ {{ invoice.invoice_amount }}</td>
+                  <td class="text-center">€ {{ invoice.invoice_btw }}</td>
+                  <td class="text-center">{{ invoice.invoice_date|date:"d/m/Y" }}</td>
+                  <td class="text-center">
+                     <span class="badge text-bg-{{ invoice.invoice_paid|yesno:'success,warning' }} toggle-status-factuur-assistent" data-invoice-id="{{ invoice.id }}">
+                     {{ invoice.invoice_paid|yesno:'Betaald,Te Betalen' }}
+                     </span>
+                  </td>
+               </tr>
+               {% endfor %}
+               <!-- Additional rows as needed -->
+            </tbody>
+         </table>
+      </div>
+   </div>
+</div>
+<div class="row">
+   <div class="col-lg-12 col-md-12 col-lg-12 col-sm-12 col-xs-12">
+      {% include 'includes/alerts.html' %}
+   </div>
+</div>
+{% endblock %}
