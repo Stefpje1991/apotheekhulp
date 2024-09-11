@@ -1,4 +1,3 @@
-<!-- change_password.html -->
 {% extends 'base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
@@ -43,7 +42,11 @@
                         <div class="d-flex justify-content-between align-items-center border-end pb-4 pb-sm-0 card-widget-3">
                            <div>
                               <h4 class="mb-0">{{ unique_person_count }}</h4>
+                              {% if unique_person_count == 1 %}
+                              <p class="mb-0"># unieke persoon</p>
+                              {% else %}
                               <p class="mb-0"># unieke personen</p>
+                              {% endif %}
                            </div>
                            <div class="avatar me-sm-6 me-3">
                               <span class="avatar-initial rounded bg-label-secondary text-heading">
@@ -75,41 +78,31 @@
       <div class="card-header">
          <div class="d-flex justify-content-between align-items-center">
             <div>
-               <select class="form-select" style="width: auto;">
-                  <option>Toon 25</option>
-                  <option>Toon 50</option>
-                  <option>Toon 100</option>
+               <select class="form-select" style="width: auto;" id="recordsPerPage">
+                  <option {% if page_obj.paginator.per_page == 10 %}selected{% endif %}>Toon 10</option>
+                  <option {% if page_obj.paginator.per_page == 25 %}selected{% endif %}>Toon 25</option>
+                  <option {% if page_obj.paginator.per_page == 50 %}selected{% endif %}>Toon 50</option>
                </select>
             </div>
             <div class="d-flex">
-               <input type="text" class="form-control me-2" placeholder="Zoek Factuur">
-               <div class="dropdown">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    Factuur Status
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item dropdown-item-invoice-status" href="#" data-status="all">Alle</a></li>
-                    <li><a class="dropdown-item dropdown-item-invoice-status" href="#" data-status="false">Te Betalen</a></li>
-                    <li><a class="dropdown-item dropdown-item-invoice-status" href="#" data-status="true">Betaald</a></li>
-                </ul>
-            </div>
+               <input type="text" class="form-control me-2" placeholder="Zoek Factuur" id="searchInvoice">
             </div>
          </div>
       </div>
       <div class="card-body">
-         <table class="table align-middle" id="invoiceTable">
+         <table class="table align-middle mb-4" id="invoiceTable">
             <thead>
                <tr>
-                  <th class="text-center" scope="col">#</th>
-                  <th class="text-center" scope="col">Apotheek</th>
-                  <th class="text-center" scope="col">Totaalbedrag excl BTW</th>
-                  <th class="text-center" scope="col">BTW (21%)</th>
-                  <th class="text-center" scope="col">Factuurdatum</th>
-                  <th class="text-center" scope="col">Status</th>
+                  <th class="text-center" scope="col" onclick="sortTable(0)">#</th>
+                  <th class="text-center" scope="col" onclick="sortTable(1)">Apotheek</th>
+                  <th class="text-center" scope="col" onclick="sortTable(2)">Totaalbedrag excl BTW</th>
+                  <th class="text-center" scope="col" onclick="sortTable(3)">BTW (21%)</th>
+                  <th class="text-center" scope="col" onclick="sortTable(4)">Factuurdatum</th>
+                  <th class="text-center" scope="col" onclick="sortTable(5)">Status</th>
                </tr>
             </thead>
             <tbody>
-               {% for invoice in all_assistenten_invoices %}
+               {% for invoice in page_obj %}
                <tr>
                   <td class="text-center"><a href="{{ invoice.invoice_pdf.url }}">{{ invoice.invoice_number }}</a></td>
                   <td class="text-center">
@@ -133,6 +126,40 @@
                <!-- Additional rows as needed -->
             </tbody>
          </table>
+         <!-- Pagination -->
+         <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+               {% if page_obj.has_previous %}
+               <li class="page-item">
+                  <a class="page-link" href="?page=1&limit={{ page_obj.paginator.per_page }}" aria-label="First">
+                     <span aria-hidden="true">&laquo;&laquo;</span>
+                  </a>
+               </li>
+               <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}&limit={{ page_obj.paginator.per_page }}" aria-label="Previous">
+                     <span aria-hidden="true">&laquo;</span>
+                  </a>
+               </li>
+               {% endif %}
+               {% for num in page_obj.paginator.page_range %}
+               <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                  <a class="page-link" href="?page={{ num }}&limit={{ page_obj.paginator.per_page }}">{{ num }}</a>
+               </li>
+               {% endfor %}
+               {% if page_obj.has_next %}
+               <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}&limit={{ page_obj.paginator.per_page }}" aria-label="Next">
+                     <span aria-hidden="true">&raquo;</span>
+                  </a>
+               </li>
+               <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&limit={{ page_obj.paginator.per_page }}" aria-label="Last">
+                     <span aria-hidden="true">&raquo;&raquo;</span>
+                  </a>
+               </li>
+               {% endif %}
+            </ul>
+         </nav>
       </div>
    </div>
 </div>

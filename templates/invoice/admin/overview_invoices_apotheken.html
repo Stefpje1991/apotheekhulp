@@ -1,12 +1,167 @@
-<!-- change_password.html -->
 {% extends 'base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container-xxl flex-grow-1 container-p-y">
-   {% for invoice in all_apotheken_invoices %}
-      {{ invoice }}
-   {% endfor %}
+   <div class="row">
+      <div class="col-md-12">
+         <div class="card mb-4">
+            <div class="card-widget-separator-wrapper">
+               <div class="card-body card-widget-separator">
+                  <div class="row gy-4 gy-sm-1">
+                     <div class="col-sm-6 col-lg-3">
+                        <div class="d-flex justify-content-between align-items-center card-widget-1 border-end pb-4 pb-sm-0">
+                           <div>
+                              <h4 class="mb-0">€ {{ omzet_last_month }}</h4>
+                              <p class="mb-0">Totaal bedrag afgelopen maand</p>
+                           </div>
+                           <div class="avatar me-sm-6 me-3">
+                              <!-- Added me-3 for spacing -->
+                              <span class="avatar-initial rounded bg-label-secondary text-heading">
+                              <i class="fas fa-euro-sign"></i>
+                              </span>
+                           </div>
+                        </div>
+                        <hr class="d-none d-sm-block d-lg-none me-6">
+                     </div>
+                     <div class="col-sm-6 col-lg-3">
+                        <div class="d-flex justify-content-between align-items-center card-widget-2 border-end pb-4 pb-sm-0">
+                           <div>
+                              <h4 class="mb-0">{{ invoice_count_last_month }}</h4>
+                              <p class="mb-0">Aantal facturen afgelopen maand</p>
+                           </div>
+                           <div class="avatar me-lg-6 me-3">
+                              <span class="avatar-initial rounded bg-label-secondary text-heading">
+                              <i class="bx bx-file bx-26px"></i>
+                              </span>
+                           </div>
+                        </div>
+                        <hr class="d-none d-sm-block d-lg-none">
+                     </div>
+                     <div class="col-sm-6 col-lg-3">
+                        <div class="d-flex justify-content-between align-items-center border-end pb-4 pb-sm-0 card-widget-3">
+                           <div>
+                              <h4 class="mb-0">{{ unique_person_count }}</h4>
+                              {% if unique_person_count == 1 %}
+                              <p class="mb-0"># unieke persoon</p>
+                              {% else %}
+                              <p class="mb-0"># unieke personen</p>
+                              {% endif %}
+                           </div>
+                           <div class="avatar me-sm-6 me-3">
+                              <span class="avatar-initial rounded bg-label-secondary text-heading">
+                              <i class="bx bx-user bx-26px"></i>
+                              </span>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-sm-6 col-lg-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                           <div>
+                              <h4 class="mb-0">€ {{ unpaid_amount }}</h4>
+                              <p class="mb-0">Openstaand bedrag</p>
+                           </div>
+                           <div class="avatar">
+                              <span class="avatar-initial rounded bg-label-secondary text-heading">
+                              <i class="bx bx-error-circle bx-26px"></i>
+                              </span>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div class="card">
+      <div class="card-header">
+         <div class="d-flex justify-content-between align-items-center">
+            <div>
+               <select class="form-select" style="width: auto;" id="recordsPerPage">
+                  <option {% if page_obj.paginator.per_page == 10 %}selected{% endif %}>Toon 10</option>
+                  <option {% if page_obj.paginator.per_page == 25 %}selected{% endif %}>Toon 25</option>
+                  <option {% if page_obj.paginator.per_page == 50 %}selected{% endif %}>Toon 50</option>
+               </select>
+            </div>
+            <div class="d-flex">
+               <input type="text" class="form-control me-2" placeholder="Zoek Factuur" id="searchInvoice">
+            </div>
+         </div>
+      </div>
+      <div class="card-body">
+         <table class="table align-middle mb-4" id="invoiceTable">
+            <thead>
+               <tr>
+                  <th class="text-center" scope="col" onclick="sortTable(0)">#</th>
+                  <th class="text-center" scope="col" onclick="sortTable(1)">Apotheek</th>
+                  <th class="text-center" scope="col" onclick="sortTable(2)">Totaalbedrag excl BTW</th>
+                  <th class="text-center" scope="col" onclick="sortTable(3)">BTW (21%)</th>
+                  <th class="text-center" scope="col" onclick="sortTable(4)">Factuurdatum</th>
+                  <th class="text-center" scope="col" onclick="sortTable(5)">Status</th>
+               </tr>
+            </thead>
+            <tbody>
+               {% for invoice in page_obj %}
+               <tr>
+                  <td class="text-center"><a href="{{ invoice.invoice_pdf.url }}">{{ invoice.invoice_number }}</a></td>
+                  <td class="text-center">
+                     <div class="d-flex justify-content-center align-items-center">
+                        <div class="avatar me-2">
+                           <img src="{% if invoice.invoice_created_by.user.profile_picture %}{{ invoice.invoice_created_by.user.profile_picture.url }}{% else %}{% static 'assets/img/avatars/default.jpg' %}{% endif %}" alt class="w-px-40 h-auto rounded-circle" />
+                        </div>
+                        <div>{{ invoice.invoice_apotheek.user.first_name }} {{ invoice.invoice_apotheek.user.last_name }}<br><small>{{ invoice.invoice_apotheek.apotheek_naamBedrijf }}</small></div>
+                     </div>
+                  </td>
+                  <td class="text-center">€ {{ invoice.invoice_amount }}</td>
+                  <td class="text-center">€ {{ invoice.invoice_btw }}</td>
+                  <td class="text-center">{{ invoice.invoice_date|date:"d/m/Y" }}</td>
+                  <td class="text-center">
+                     <span class="badge text-bg-{{ invoice.invoice_paid|yesno:'success,warning' }} toggle-status-factuur-apotheek" data-invoice-id="{{ invoice.id }}">
+                     {{ invoice.invoice_paid|yesno:'Betaald,Te Betalen' }}
+                     </span>
+                  </td>
+               </tr>
+               {% endfor %}
+               <!-- Additional rows as needed -->
+            </tbody>
+         </table>
+         <!-- Pagination -->
+         <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+               {% if page_obj.has_previous %}
+               <li class="page-item">
+                  <a class="page-link" href="?page=1&limit={{ page_obj.paginator.per_page }}" aria-label="First">
+                     <span aria-hidden="true">&laquo;&laquo;</span>
+                  </a>
+               </li>
+               <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}&limit={{ page_obj.paginator.per_page }}" aria-label="Previous">
+                     <span aria-hidden="true">&laquo;</span>
+                  </a>
+               </li>
+               {% endif %}
+               {% for num in page_obj.paginator.page_range %}
+               <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                  <a class="page-link" href="?page={{ num }}&limit={{ page_obj.paginator.per_page }}">{{ num }}</a>
+               </li>
+               {% endfor %}
+               {% if page_obj.has_next %}
+               <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}&limit={{ page_obj.paginator.per_page }}" aria-label="Next">
+                     <span aria-hidden="true">&raquo;</span>
+                  </a>
+               </li>
+               <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&limit={{ page_obj.paginator.per_page }}" aria-label="Last">
+                     <span aria-hidden="true">&raquo;&raquo;</span>
+                  </a>
+               </li>
+               {% endif %}
+            </ul>
+         </nav>
+      </div>
+   </div>
 </div>
 <div class="row">
    <div class="col-lg-12 col-md-12 col-lg-12 col-sm-12 col-xs-12">

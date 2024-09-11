@@ -1176,12 +1176,19 @@ def overview_all_invoices_assistenten_admin(request):
     unpaid_amount_value = unpaid_amount['total_unpaid'] if unpaid_amount['total_unpaid'] is not None else 0
     unpaid_amount_rounded = round(unpaid_amount_value, 2)
 
-    # Alle assistentenfacturen (voor weergave in de tabel)
-    all_assistenten_invoices = InvoiceOverview.objects.all().order_by('-invoice_date')
+    # Limiet van het aantal records op basis van de gebruiker selectie (standaard 10)
+    limit = request.GET.get('limit', 10)
 
-    # Context voor de template
+    # Alle assistentenfacturen (voor weergave in de tabel)
+    all_assistenten_invoices = InvoiceOverview.objects.all().order_by('-invoice_date', 'invoice_created_by__user__last_name')
+
+    # Paginator
+    paginator = Paginator(all_assistenten_invoices, limit)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'all_assistenten_invoices': all_assistenten_invoices,
+        'page_obj': page_obj,
         'omzet_last_month': omzet_last_month_rounded,
         'invoice_count_last_month': invoice_count_last_month,
         'unique_person_count': unique_person_count,
@@ -1193,9 +1200,56 @@ def overview_all_invoices_assistenten_admin(request):
 
 @role_required(3)
 def overview_all_invoices_apotheken_admin(request):
-    all_apotheken_invoices = InvoiceApotheekOverview.objects.all().order_by('-invoice_date')
+    # Huidige datum en tijd
+    today = now().date()
+
+    # Begin en einde van de vorige maand
+    first_day_of_month = today.replace(day=1)
+    last_month_end = first_day_of_month - timedelta(days=1)
+    first_day_of_last_month = last_month_end.replace(day=1)
+
+    # Facturen van de afgelopen maand
+    last_month_invoices = InvoiceApotheekOverview.objects.filter(invoice_date__range=[first_day_of_last_month, last_month_end])
+    # Aantal facturen afgelopen maand
+    invoice_count_last_month = last_month_invoices.count()
+    # Omzet afgelopen maand (som van invoice_amount + invoice_btw)
+    omzet_last_month = last_month_invoices.aggregate(
+        total=Sum(F('invoice_amount') + F('invoice_btw'))
+    )
+
+    # Afronden van de bedragen op 2 decimalen
+    omzet_last_month_value = omzet_last_month['total'] if omzet_last_month['total'] is not None else 0
+    omzet_last_month_rounded = round(omzet_last_month_value, 2)
+
+    # Aantal unieke personen die een factuur maakten
+    unique_person_count = last_month_invoices.values('invoice_apotheek').distinct().count()
+
+    # Totale bedrag dat nog niet betaald is (som van invoice_amount + invoice_btw)
+    unpaid_invoices = InvoiceApotheekOverview.objects.filter(invoice_paid=False)
+    unpaid_amount = unpaid_invoices.aggregate(
+        total_unpaid=Sum(F('invoice_amount') + F('invoice_btw'))
+    )
+    unpaid_amount_value = unpaid_amount['total_unpaid'] if unpaid_amount['total_unpaid'] is not None else 0
+    unpaid_amount_rounded = round(unpaid_amount_value, 2)
+
+    # Limiet van het aantal records op basis van de gebruiker selectie (standaard 10)
+    limit = request.GET.get('limit', 10)
+
+    # Alle facturen, geordend op factuurdatum en achternaam
+    all_apotheken_invoices = InvoiceApotheekOverview.objects.all().order_by('-invoice_date', 'invoice_apotheek__user__last_name')
+
+    # Paginator
+    paginator = Paginator(all_apotheken_invoices, limit)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'all_apotheken_invoices': all_apotheken_invoices
+        'page_obj': page_obj,
+        'omzet_last_month': omzet_last_month_rounded,
+        'invoice_count_last_month': invoice_count_last_month,
+        'unique_person_count': unique_person_count,
+        'unpaid_amount': unpaid_amount_rounded,
+        'all_apotheken_invoices': all_apotheken_invoices,
     }
     return render(request, 'invoice/admin/overview_invoices_apotheken.html', context)
 
@@ -1211,6 +1265,7 @@ def get_filtered_invoices(request):
         invoices = InvoiceOverview.objects.filter(invoice_paid=paid_status)
 
     data = list(invoices.values(
+        'id',
         'invoice_number',
         'invoice_pdf',
         'invoice_amount',
@@ -1231,3 +1286,50 @@ def get_filtered_invoices(request):
         invoice['invoice_paid'] = 'Betaald' if invoice['invoice_paid'] else 'Te Betalen'
 
     return JsonResponse(data, safe=False)
+
+
+@role_required(3)
+def get_filtered_invoices_to_apotheek(request):
+    status = request.GET.get('status')
+    limit = request.GET.get('limit', 10)  # Default is 10 items per pagina
+
+    if status == 'all':
+        invoices = InvoiceApotheekOverview.objects.all()
+    else:
+        paid_status = status == 'true'
+        invoices = InvoiceApotheekOverview.objects.filter(invoice_paid=paid_status)
+
+    paginator = Paginator(invoices, limit)  # Paginering toepassen
+    page_number = request.GET.get('page', 1)  # Standaard pagina 1
+    page_obj = paginator.get_page(page_number)
+
+    data = list(page_obj.object_list.values(
+        'id',
+        'invoice_number',
+        'invoice_pdf',
+        'invoice_amount',
+        'invoice_btw',
+        'invoice_date',
+        'invoice_apotheek__user__first_name',
+        'invoice_apotheek__user__last_name',
+        'invoice_apotheek__apotheek_naamBedrijf',
+        'invoice_paid'
+    ))
+
+    for invoice in data:
+        invoice[
+            'invoice_created_by_name'] = f"{invoice.pop('invoice_apotheek__user__first_name')} {invoice.pop('invoice_apotheek__user__last_name')}"
+        invoice['invoice_created_by_company'] = invoice.pop('invoice_apotheek__apotheek_naamBedrijf')
+        invoice['invoice_pdf_url'] = invoice.pop('invoice_pdf')
+        invoice['invoice_date'] = invoice.pop('invoice_date').strftime("%d/%m/%Y")
+        invoice['invoice_paid'] = 'Betaald' if invoice['invoice_paid'] else 'Te Betalen'
+
+    response_data = {
+        'invoices': data,
+        'page': page_obj.number,
+        'num_pages': paginator.num_pages,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+    }
+
+    return JsonResponse(response_data)

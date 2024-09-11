@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/overview_all_invoices_assistenten_admin/', views.overview_all_invoices_assistenten_admin, name='overview_all_invoices_assistenten_admin'),
     path('admin/overview_all_invoices_apotheken_admin/', views.overview_all_invoices_apotheken_admin, name='overview_all_invoices_apotheken_admin'),
     path('admin/get_filtered_invoices/', views.get_filtered_invoices, name='get_filtered_invoices'),
+    path('admin/get_filtered_invoices_to_apotheek/', views.get_filtered_invoices_to_apotheek, name='get_filtered_invoices_to_apotheek'),
 ]

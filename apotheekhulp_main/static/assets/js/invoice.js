@@ -17,7 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const addNewLinkButton = document.querySelector('.add-new-link-between-assistent-and-apotheek');
     const editLinkModalCheck = document.getElementById('editLinkModal');
     const dropdownItemsInvoiceStatus = document.querySelectorAll('.dropdown-item-invoice-status');
+    const dropdownItemsInvoiceApotheekStatus = document.querySelectorAll('.dropdown-item-invoice-status-apotheek');
     const invoiceTableBody = document.querySelector('#invoiceTable tbody');
+    const select = document.querySelector('#recordsPerPage');
+    let searchFieldInvoiceTable = document.getElementById("searchInvoice");
+    let invoiceTable = document.getElementById("invoiceTable");
 
     let createInvoiceApotheekModal;
     let createInvoiceModal;
@@ -340,15 +344,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         badge.classList.remove('text-bg-warning');
                         badge.classList.add('text-bg-success');
                         badge.textContent = 'Betaald';
-
-
                     } else {
                         badge.classList.remove('text-bg-success');
                         badge.classList.add('text-bg-warning');
                         badge.textContent = 'Te Betalen';
                     }
                      // Check if the current URL ends with the desired path
-                    if (currentUrl.endsWith('/invoice/admin/overview_all_invoices_assistenten_admin/')) {
+                    if (
+                      currentUrl.endsWith('/invoice/admin/overview_all_invoices_assistenten_admin/')
+                    ) {
                         location.reload(); // Refresh the page
                     }
                 })
@@ -383,6 +387,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         badge.classList.remove('text-bg-success');
                         badge.classList.add('text-bg-warning');
                         badge.textContent = 'Te Betalen';
+                    }
+
+                     // Refresh the page if needed
+                    if (window.location.pathname.endsWith('/invoice/admin/overview_all_invoices_apotheken_admin/')) {
+                        window.location.reload();
                     }
                 })
                 .catch(error => {
@@ -494,6 +503,51 @@ document.addEventListener('DOMContentLoaded', function() {
             filterInvoices(status);
         });
     });
+
+    dropdownItemsInvoiceApotheekStatus.forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default action of the link
+
+            const status = this.getAttribute('data-status');
+            filterInvoicesApotheek(status);
+        });
+    });
+
+    if (select) {
+        select.addEventListener('change', function () {
+            const selectedValue = this.value.split(' ')[1];  // Haalt het nummer op van de optie (10, 25, 50)
+            const url = new URL(window.location.href);
+            url.searchParams.set('limit', selectedValue);  // Voegt de limit-parameter toe aan de URL
+            window.location.href = url.toString();  // Stuurt de gebruiker naar de nieuwe URL met de parameter
+        });
+    };
+
+    if (searchFieldInvoiceTable && invoiceTable) {
+        searchFieldInvoiceTable.addEventListener("keyup", function() {
+            let input = searchFieldInvoiceTable;
+            let filter = input.value.toUpperCase(); // Zoek niet hoofdlettergevoelig
+            let rows = invoiceTable.getElementsByTagName("tr");
+
+            // Loop door alle rijen van de tabel (behalve de headers) en verberg degene die niet overeenkomen met de zoekterm
+            for (let i = 1; i < rows.length; i++) { // Start bij 1 om de header over te slaan
+                let shouldShow = false;
+                // Loop door alle kolommen in een rij
+                let columns = rows[i].getElementsByTagName("td");
+                for (let j = 0; j < columns.length; j++) {
+                    if (columns[j]) {
+                        let txtValue = columns[j].textContent || columns[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            shouldShow = true;
+                            break; // Stop met zoeken in de huidige rij als er een match is
+                        }
+                    }
+                }
+                // Verberg of toon de rij op basis van het zoekresultaat
+                rows[i].style.display = shouldShow ? "" : "none";
+            }
+        });
+    }
+
 });
 
 function getCookie(name) {
@@ -609,6 +663,7 @@ function submitInvoice() {
 function submitInvoiceApotheek() {
         const form = document.getElementById('invoiceFormApotheek');
         const formData = new FormData(form);
+        let createInvoiceApotheekModal;
 
         // Collect selected events and their corresponding totals from the modal
         const selectedEvents = Array.from(document.querySelectorAll('input[name="select_event"]:checked')).map(checkbox => ({
@@ -731,21 +786,41 @@ function filterInvoices(status) {
             });
     }
 
+function filterInvoicesApotheek(status) {
+        // Fetch the invoices based on the selected status
+        fetch(`/invoice/admin/get_filtered_invoices_to_apotheek/?status=${status}`)
+            .then(response => response.json())
+            .then(data => {
+                updateTableApotheekInvoices(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Er is een fout opgetreden bij het ophalen van de facturen.');
+            });
+    }
+
 function updateTable(invoices) {
     const invoiceTableBody = document.querySelector('#invoiceTable tbody'); // Ensure this selector matches your HTML
     if (!invoiceTableBody) {
         console.error('Table body not found.');
         return;
     }
+    invoices.sort((a, b) => {
+        // Eerst sorteren op invoice_date
+        const dateComparison = parseDate(b.invoice_date) - parseDate(a.invoice_date);
 
-    // Log before sorting
-    console.log('Before sorting:', invoices);
+        if (dateComparison !== 0) {
+            return dateComparison; // Als de datums niet gelijk zijn, gebruik de datum-sortering
+        }
 
-    // Sort invoices by invoice_date
-    invoices.sort((a, b) => parseDate(b.invoice_date) - parseDate(a.invoice_date));
+        // Als de datums gelijk zijn, sorteren op last_name (alfabetisch)
+        const lastNameA = a.invoice_created_by_name.toLowerCase();
+        const lastNameB = b.invoice_created_by_name.toLowerCase();
 
-    // Log after sorting
-    console.log('After sorting:', invoices);
+        if (lastNameA < lastNameB) return -1;
+        if (lastNameA > lastNameB) return 1;
+        return 0; // Als beide gelijk zijn
+    });
 
     // Clear existing rows
     invoiceTableBody.innerHTML = '';
@@ -753,9 +828,6 @@ function updateTable(invoices) {
     // Add new rows
     invoices.forEach(invoice => {
         const isPaid = invoice.invoice_paid === 'Betaald';
-        console.log('Invoice ID:', invoice.id); // Check if invoice.id is defined
-        console.log('Is Paid:', isPaid);
-        console.log('Invoice:', invoice);
 
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -783,11 +855,9 @@ function updateTable(invoices) {
     // Reattach event listeners for the badges
     const badges = document.querySelectorAll('.toggle-status-factuur-assistent');
     badges.forEach(badge => {
-        console.log('Setting event listener for badge:', badge); // Debugging line
 
         badge.addEventListener('click', function() {
             const invoiceId = badge.dataset.invoiceId;
-            console.log('Badge Invoice ID:', invoiceId); // Ensure this logs the correct ID
 
             fetch('/invoice/admin/toggle_invoice_status_factuur_assistent/', {
                 method: 'POST',
@@ -822,7 +892,179 @@ function updateTable(invoices) {
     });
 }
 
+function updateTableApotheekInvoices(invoices) {
+    const invoiceTableBody = document.querySelector('#invoiceTable tbody'); // Ensure this selector matches your HTML
+    if (!invoiceTableBody) {
+        console.error('Table body not found.');
+        return;
+    }
+    console.log(Array.isArray(invoices), invoices);
+    console.log(invoices)
+    console.log(typeof(invoices))
+    invoices.invoices.sort((a, b) => {
+        // Eerst sorteren op invoice_date
+        const dateComparison = parseDate(b.invoice_date) - parseDate(a.invoice_date);
+
+        if (dateComparison !== 0) {
+            return dateComparison; // Als de datums niet gelijk zijn, gebruik de datum-sortering
+        }
+
+        // Als de datums gelijk zijn, sorteren op last_name (alfabetisch)
+        const lastNameA = a.invoice_created_by_name.toLowerCase();
+        const lastNameB = b.invoice_created_by_name.toLowerCase();
+
+        if (lastNameA < lastNameB) return -1;
+        if (lastNameA > lastNameB) return 1;
+        return 0; // Als beide gelijk zijn
+    });
+    console.log(invoices)
+
+    // Clear existing rows
+    invoiceTableBody.innerHTML = '';
+
+    // Add new rows
+    invoices.invoices.forEach(invoice => {
+        const isPaid = invoice.invoice_paid === 'Betaald';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-center"><a href="${invoice.invoice_pdf_url}">${invoice.invoice_number}</a></td>
+            <td class="text-center">
+                <div class="d-flex align-items-center">
+                    <div class="avatar me-2">
+                        <img src="${invoice.invoice_created_by_picture_url || '/static/assets/img/avatars/default.jpg'}" class="w-px-40 h-auto rounded-circle" />
+                    </div>
+                    <div>${invoice.invoice_created_by_name}<br><small>${invoice.invoice_created_by_company}</small></div>
+                </div>
+            </td>
+            <td class="text-center">€ ${invoice.invoice_amount}</td>
+            <td class="text-center">€ ${invoice.invoice_btw}</td>
+            <td class="text-center">${invoice.invoice_date}</td>
+            <td class="text-center">
+                <span class="badge text-bg-${isPaid ? 'success' : 'warning'} toggle-status-factuur-apotheek" data-invoice-id="${invoice.id}">
+                    ${isPaid ? 'Betaald' : 'Te Betalen'}
+                </span>
+            </td>
+        `;
+        invoiceTableBody.appendChild(row);
+    });
+
+    // Reattach event listeners for the badges
+    const badges = document.querySelectorAll('.toggle-status-factuur-apotheek');
+    console.log(badges)
+    badges.forEach(badge => {
+        badge.addEventListener('click', function() {
+            const invoiceId = badge.dataset.invoiceId;
+
+            fetch('/invoice/admin/toggle_invoice_status_factuur_apotheek/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ 'invoice_id': invoiceId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    badge.classList.remove('text-bg-warning');
+                    badge.classList.add('text-bg-success');
+                    badge.textContent = 'Betaald';
+                } else {
+                    badge.classList.remove('text-bg-success');
+                    badge.classList.add('text-bg-warning');
+                    badge.textContent = 'Te Betalen';
+                }
+
+                // Refresh the page if needed
+                if (window.location.pathname.endsWith('/invoice/admin/overview_all_invoices_apotheken_admin/')) {
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Er is een fout opgetreden bij het bijwerken van de factuurstatus.');
+            });
+        });
+    });
+}
+
 function parseDate(dateStr) {
     const [day, month, year] = dateStr.split('/').map(Number);
     return new Date(year, month - 1, day); // month is zero-based in JavaScript Date
 }
+
+function sortTable(columnIndex) {
+   var table, rows, switching, i, x, y, shouldSwitch, direction, switchcount = 0;
+   table = document.getElementById("invoiceTable");
+   switching = true;
+   direction = "asc"; // Begin met oplopende volgorde
+
+   while (switching) {
+      switching = false;
+      rows = table.rows;
+
+      // Loop over de rijen, behalve de eerste (de header)
+      for (i = 1; i < (rows.length - 1); i++) {
+         shouldSwitch = false;
+         x = rows[i].getElementsByTagName("TD")[columnIndex];
+         y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+
+         // Afhankelijk van de kolomindex, behandel de waarden anders (getal, datum, tekst)
+         if (columnIndex === 2 || columnIndex === 3) { // Voor kolommen 3 en 4 (getallen)
+            var numX = parseFloat(x.innerHTML.replace('€', '').replace(',', '.'));
+            var numY = parseFloat(y.innerHTML.replace('€', '').replace(',', '.'));
+            if (direction == "asc") {
+               if (numX > numY) {
+                  shouldSwitch = true;
+                  break;
+               }
+            } else if (direction == "desc") {
+               if (numX < numY) {
+                  shouldSwitch = true;
+                  break;
+               }
+            }
+         } else if (columnIndex === 4) { // Voor kolom 5 (datum)
+            var dateX = new Date(x.innerHTML.split('/').reverse().join('-')); // Verander d/m/Y naar Y-m-d
+            var dateY = new Date(y.innerHTML.split('/').reverse().join('-'));
+            if (direction == "asc") {
+               if (dateX > dateY) {
+                  shouldSwitch = true;
+                  break;
+               }
+            } else if (direction == "desc") {
+               if (dateX < dateY) {
+                  shouldSwitch = true;
+                  break;
+               }
+            }
+         } else { // Voor andere kolommen (tekst)
+            if (direction == "asc") {
+               if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                  shouldSwitch = true;
+                  break;
+               }
+            } else if (direction == "desc") {
+               if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                  shouldSwitch = true;
+                  break;
+               }
+            }
+         }
+      }
+
+      if (shouldSwitch) {
+         rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+         switching = true;
+         switchcount++;
+      } else {
+         // Als er geen switch heeft plaatsgevonden en de richting 'asc' was, wijzig naar 'desc'
+         if (switchcount == 0 && direction == "asc") {
+            direction = "desc";
+            switching = true;
+         }
+      }
+   }
+}
+
